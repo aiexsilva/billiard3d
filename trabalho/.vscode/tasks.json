@@ -16,6 +16,7 @@
        "${workspaceFolder}/dependencies/library/libGLEW.2.2.0.dylib",
        "${workspaceFolder}/dependencies/library/libglm.dylib",
        "${workspaceFolder}/ShaderLoader.cpp",
+       "${workspaceFolder}/ObjLoader.cpp",
        "${workspaceFolder}/Source.cpp",
        "-o",
        "${workspaceFolder}/app",

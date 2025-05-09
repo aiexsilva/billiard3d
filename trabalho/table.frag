@@ -1,8 +1,6 @@
 #version 410 core
 
-out vec4 outColor;
-
-void main()
-{
-    outColor = vec4(1.0, 1.0, 1.0, 1.0);
+out vec4 FragColor;
+void main() {
+    FragColor = vec4(0.48f, 0.8f, 0.4f, 1.0f); //green
 }
