@@ -20,7 +20,7 @@ namespace P3D
    {
    public:
       /// Construct a Ball pointing to files in PoolBalls/, named like "Ball1"
-      /// Expects: PoolBalls/Ball1.obj, PoolBalls/Ball1.mtl, PoolBalls/PoolBalluv1.jpeg
+      /// Expects: PoolBalls/Ball1.obj, PoolBalls/Ball1.mtl, PoolBalls/PoolBalluv1.jpg
       Ball(const std::string &baseName);
       ~Ball();
 
@@ -28,7 +28,7 @@ namespace P3D
       void Install();
 
       /// Render the ball with given shader and camera matrices
-      /// shaderProgram must have a uniform "MVP"
+      /// shaderProgram must have uniforms "MVP" and sampler2D "uTex"
       void Render(GLuint shaderProgram,
                   const glm::mat4 &view,
                   const glm::mat4 &projection) const;
@@ -43,11 +43,12 @@ namespace P3D
       static bool meshInitialized;
       static GLuint VAO;
       static GLuint VBO;
-      static GLuint EBO;
-      static GLuint textureID;
       static std::vector<glm::vec3> vertices;
       static std::vector<glm::vec2> uvs;
       static std::vector<glm::vec3> normals;
+
+      // Per-instance texture
+      GLuint textureID;
 
       // Paths for this ball's resources
       std::string objPath;
@@ -56,8 +57,8 @@ namespace P3D
 
       // Helpers
       void loadMesh();     // uses ObjLoader to fill vertices, uvs, normals
-      void setupBuffers(); // glGenVAO/VBO/EBO and upload data
-      void loadTexture();  // loads JPEG via stb_image (or other) into textureID
+      void setupBuffers(); // glGenVAO/VBO and upload interleaved data (pos+uv)
+      void loadTexture();  // loads JPEG via stb_image into textureID
    };
 
 } // namespace P3D

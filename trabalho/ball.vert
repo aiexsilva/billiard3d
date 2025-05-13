@@ -1,7 +1,13 @@
 #version 410 core
 
+// Vertex position and UV
 layout(location = 0) in vec3 position;
-uniform mat4 MVP2;
+layout(location = 1) in vec2 inUV;
+
+out vec2 TexCoord;
+uniform mat4 MVP;
+
 void main() {
-    gl_Position = MVP2 * vec4(position, 1.0f);
+    TexCoord = inUV;
+    gl_Position = MVP * vec4(position, 1.0);
 }

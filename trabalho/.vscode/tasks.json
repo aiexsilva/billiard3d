@@ -17,6 +17,7 @@
        "${workspaceFolder}/dependencies/library/libglm.dylib",
        "${workspaceFolder}/ShaderLoader.cpp",
        "${workspaceFolder}/ObjLoader.cpp",
+       "${workspaceFolder}/Ball.cpp",
        "${workspaceFolder}/Source.cpp",
        "-o",
        "${workspaceFolder}/app",

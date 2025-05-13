@@ -1,7 +1,10 @@
 #version 410 core
 
+in vec2 TexCoord;
 out vec4 FragColor;
 
+uniform sampler2D uTex;
+
 void main() {
-    FragColor = vec4(1.0, 0.0, 1.0, 1.0); // bright pink
+    FragColor = texture(uTex, TexCoord);
 }
