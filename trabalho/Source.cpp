@@ -6,180 +6,272 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "ShaderLoader.h" 
+#include "ShaderLoader.h"
 #include "ObjLoader.h"
 
 using namespace std;
 
-#define height 800
-#define width 1200
-#define GLEW_STATIC
+// Window dimensions
+const unsigned int WIDTH = 1200;
+const unsigned int HEIGHT = 800;
 
-#define NumVAOs 1
-#define NumBuffers 2
+// Minimap size in pixels
+const unsigned int MINIMAP_SIZE = 200;
 
-GLuint VAOs[NumVAOs];
-GLuint Buffers[NumBuffers];
+// Global VAO/VBO
+GLuint VAOs[1];
+GLuint Buffers[2];
 
-//initiaize vectors to store info obtained from objloader.cpp 
-std::vector< glm::vec3 > vertices;
-std::vector< glm::vec2 > uvs;
-std::vector< glm::vec3 > normals;
+// OBJ loader data
+vector<glm::vec3> vertices;
+vector<glm::vec2> uvs;
+vector<glm::vec3> normals;
 
-int minimap = 200;
+// Camera spherical coordinates for main view
+float radius = 3.0f; // reduced to bring table closer into view
+float yaw = 0.0f;
+float pitch = 20.0f;
 
-int main() {
-    //init (these 5 lines are specifically needed for macos)
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_DEPTH_BITS, 24); //u need this to enable the depth test
+// Mouse control parameters
+const float sensitivity = 0.1f;
+const float zoomSpeed = 1.0f;
+bool firstMouse = true;
+float lastX = WIDTH * 0.5f;
+float lastY = HEIGHT * 0.5f;
 
-    //create window
-    GLFWwindow* window = glfwCreateWindow(width, height, "Billiards", NULL, NULL);
-    if (!window) {
-        std::cout << "failed to create window\n";
-        glfwTerminate();
-        return -1;
-    }
+// Input handling: close window on ESC key
+void handleInput(GLFWwindow *window)
+{
+   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+      glfwSetWindowShouldClose(window, true);
+}
 
-    glfwMakeContextCurrent(window);
+// Cursor position callback: update yaw and pitch based on mouse movement
+void cursor_callback(GLFWwindow *window, double xpos, double ypos)
+{
+   if (firstMouse)
+   {
+      lastX = float(xpos);
+      lastY = float(ypos);
+      firstMouse = false;
+   }
+   float xoffset = float(xpos) - lastX;
+   float yoffset = lastY - float(ypos);
+   lastX = float(xpos);
+   lastY = float(ypos);
 
-    //init GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        std::cout << "failed to initialize glew\n";
-        return -1;
-    }
+   xoffset *= sensitivity;
+   yoffset *= sensitivity;
 
-    //3d parallelepiped vertices, assuming width = 1, lenght = 2, height = 0.3 
-    GLfloat paraleli_vertices[] = {
-        //front 
-        -0.5f, -0.15f, 1.0f,  //front bottom left
-        0.5f, -0.15f, 1.0f,   //front bottom right
-        0.5f, 0.15f, 1.0f,    //front top right
-        -0.5f, 0.15f, 1.0f,   //front top left
-    
-        //back 
-        -0.5f, -0.15f, -1.0f,  //back bottom left
-        0.5f, -0.15f, -1.0f,   //back bottom right
-        0.5f, 0.15f, -1.0f,    //back top right
-        -0.5f, 0.15f, -1.0f    //back top left
-    };
+   yaw += xoffset;
+   pitch += yoffset;
+   pitch = glm::clamp(pitch, -89.0f, 89.0f);
+}
 
-    GLuint paraleli_indices[] = {
-        //front face
-        0, 1, 2, 0, 2, 3,
-    
-        //back face
-        4, 5, 6, 4, 6, 7,
-    
-        //left face
-        0, 3, 7, 0, 7, 4,
-    
-        //right face
-        1, 2, 6, 1, 6, 5,
-    
-        //top face
-        2, 3, 7, 2, 7, 6,
-    
-        //bottom face
-        0, 1, 5, 0, 5, 4
-    };
+// Scroll callback: zoom in/out by adjusting radius
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+   radius -= float(yoffset) * zoomSpeed;
+   radius = glm::clamp(radius, 2.0f, 20.0f);
+}
 
-    glGenVertexArrays(NumVAOs, VAOs);
-    glGenBuffers(NumBuffers, Buffers);
+// Utility to setup VAO/VBO for mesh data
+void makeVAO(const float *verts, size_t vertSize,
+             const unsigned int *idx, size_t idxSize,
+             GLuint &VAO, GLuint &VBO, GLuint &EBO)
+{
+   glGenVertexArrays(1, &VAO);
+   glGenBuffers(1, &VBO);
+   glGenBuffers(1, &EBO);
+   glBindVertexArray(VAO);
 
-    GLuint shader = LoadShaders("table.vert", "table.frag");
-    GLuint shader2 = LoadShaders("ball.vert", "ball.frag");
+   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   glBufferData(GL_ARRAY_BUFFER, vertSize, verts, GL_STATIC_DRAW);
 
-    bool obj = LoadObject("PoolBalls/Ball1.obj", vertices, uvs, normals);
-    if (!obj) {
-    std::cout << "unable to load obj file\n";
-    } else {
-    std::cout << "loaded " << vertices.size() << " vertices from obj file\n";
-    }
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, idxSize, idx, GL_STATIC_DRAW);
 
-    GLuint objVAO, objVBO;
-    glGenVertexArrays(1, &objVAO);
-    glGenBuffers(1, &objVBO);
+   // position attribute
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+   glEnableVertexAttribArray(0);
+   glBindVertexArray(0);
+}
 
-    //identity matrix
-    glm::mat4 model = glm::mat4(1.0f);
-    //camera position, where the camera is looking at, up direction on y axis
-    glm::mat4 view = glm::lookAt(glm::vec3(1.5f, 1.5f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    //angle which gives u more or less zoom, 0.1 and 100 define that objects closer or further than that will not be rendered
-    glm::mat4 projection = glm::perspective(glm::radians(35.0f), (float)width / height, 0.1f, 100.0f);
-    glm::mat4 mvp = projection * view * model;
+int main()
+{
+   // Initialize GLFW
+   glfwInit();
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+   glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
-    GLuint mvpLoc = glGetUniformLocation(shader, "MVP");
-    GLuint mvpLoc2 = glGetUniformLocation(shader2, "MVP2");
+   // Create window
+   GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Billiards", nullptr, nullptr);
+   if (!window)
+   {
+      cerr << "Failed to create GLFW window" << endl;
+      glfwTerminate();
+      return -1;
+   }
+   glfwMakeContextCurrent(window);
 
-    //--table--
-    glUseProgram(shader);
-    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+   // Initialize GLEW
+   glewExperimental = GL_TRUE;
+   if (glewInit() != GLEW_OK)
+   {
+      cerr << "Failed to initialize GLEW" << endl;
+      return -1;
+   }
 
-    //bind
-    glBindVertexArray(VAOs[0]);
+   // Register input callbacks
+   glfwSetCursorPosCallback(window, cursor_callback);
+   glfwSetScrollCallback(window, scroll_callback);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    //buffers for 3d parallelepiped
-    glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(paraleli_vertices), paraleli_vertices, GL_STATIC_DRAW);
+   // Load shaders
+   GLuint tableShader = LoadShaders("table.vert", "table.frag");
+   GLuint ballShader = LoadShaders("ball.vert", "ball.frag");
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffers[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(paraleli_indices), paraleli_indices, GL_STATIC_DRAW);
+   // Load OBJ data
+   if (!LoadObject("PoolBalls/Ball1.obj", vertices, uvs, normals))
+   {
+      cerr << "Failed to load OBJ file" << endl;
+      return -1;
+   }
 
-     //position for 3d parallelepiped
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-    glEnableVertexAttribArray(0);
+   // Setup table geometry
+   GLfloat tableVerts[] = {
+       -0.5f, -0.15f, 1.0f,
+       0.5f, -0.15f, 1.0f,
+       0.5f, 0.15f, 1.0f,
+       -0.5f, 0.15f, 1.0f,
+       -0.5f, -0.15f, -1.0f,
+       0.5f, -0.15f, -1.0f,
+       0.5f, 0.15f, -1.0f,
+       -0.5f, 0.15f, -1.0f};
+   unsigned int tableIdx[] = {
+       0, 1, 2, 0, 2, 3,
+       4, 5, 6, 4, 6, 7,
+       0, 3, 7, 0, 7, 4,
+       1, 2, 6, 1, 6, 5,
+       2, 3, 7, 2, 7, 6,
+       0, 1, 5, 0, 5, 4};
+   makeVAO(tableVerts, sizeof(tableVerts), tableIdx, sizeof(tableIdx), VAOs[0], Buffers[0], Buffers[1]);
 
-    //--ball--
-    glUseProgram(shader2);
-    glUniformMatrix4fv(mvpLoc2, 1, GL_FALSE, glm::value_ptr(mvp));
-    
-    //bind
-    glBindVertexArray(objVAO);
+   // Setup ball VAO/VBO
+   GLuint ballVAO, ballVBO;
+   glGenVertexArrays(1, &ballVAO);
+   glGenBuffers(1, &ballVBO);
+   glBindVertexArray(ballVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, ballVBO);
+   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+   glEnableVertexAttribArray(0);
+   glBindVertexArray(0);
 
-    //buffers for ball
-    glBindBuffer(GL_ARRAY_BUFFER, objVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+   // Get uniform locations
+   GLint tableMVPLoc = glGetUniformLocation(tableShader, "MVP");
+   GLint ballMVPLoc = glGetUniformLocation(ballShader, "MVP2");
 
-    //position for ball
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
+   // Setup projection matrix
+   glm::mat4 projection = glm::perspective(glm::radians(60.0f), float(WIDTH) / HEIGHT, 0.1f, 100.0f);
 
-    //depth testing
-    glEnable(GL_DEPTH_TEST);
+   glEnable(GL_DEPTH_TEST);
 
-    //main loop
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   // Main render loop
+   while (!glfwWindowShouldClose(window))
+   {
+      handleInput(window);
 
-        //render table
-        glm::mat4 tableModel = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));  
-        glm::mat4 tableMVP = projection * view * tableModel;
-        glUseProgram(shader);
-        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(tableMVP));
+      // Get actual framebuffer size for HiDPI support
+      int fbWidth, fbHeight;
+      glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
 
-        glBindVertexArray(VAOs[0]);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+      // Clear full framebuffer
+      glViewport(0, 0, fbWidth, fbHeight);
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //render ball
-        glm::mat4 ballModel = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f)); 
-        ballModel = glm::scale(ballModel, glm::vec3(0.05f, 0.05f, 0.05f));
-        glm::mat4 ballMVP = projection * view * ballModel;
-        glUseProgram(shader2);
-        glUniformMatrix4fv(mvpLoc2, 1, GL_FALSE, glm::value_ptr(ballMVP));
+      // Compute camera for main view
+      float yawRad = glm::radians(yaw);
+      float pitchRad = glm::radians(pitch);
+      glm::vec3 camPos(
+          radius * cos(pitchRad) * sin(yawRad),
+          radius * sin(pitchRad),
+          radius * cos(pitchRad) * cos(yawRad));
+      glm::mat4 view = glm::lookAt(camPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        glBindVertexArray(objVAO);
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+      // Draw main table
+      glUseProgram(tableShader);
+      glm::mat4 tableModel = glm::mat4(1.0f);
+      glm::mat4 tableMVP = projection * view * tableModel;
+      glUniformMatrix4fv(tableMVPLoc, 1, GL_FALSE, glm::value_ptr(tableMVP));
+      glBindVertexArray(VAOs[0]);
+      glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+      // Draw main ball
+      glUseProgram(ballShader);
+      glm::mat4 ballModel = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
+      ballModel = glm::scale(ballModel, glm::vec3(0.05f));
+      glm::mat4 ballMVP = projection * view * ballModel;
+      glUniformMatrix4fv(ballMVPLoc, 1, GL_FALSE, glm::value_ptr(ballMVP));
+      glBindVertexArray(ballVAO);
+      glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
-    glfwTerminate();
-    return 0;
+      // Render minimap with white border and black background
+      const int border = 1; // thickness in pixels
+      int minix = fbWidth - MINIMAP_SIZE - 10;
+      int miniy = fbHeight - MINIMAP_SIZE - 10;
+
+      // 1. Clear border area to white using scissor
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(minix - border, miniy - border,
+                MINIMAP_SIZE + 2 * border, MINIMAP_SIZE + 2 * border);
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      // 2. Clear inner minimap area to black (also clear depth)
+      glScissor(minix, miniy, MINIMAP_SIZE, MINIMAP_SIZE);
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glDisable(GL_SCISSOR_TEST);
+
+      // 3. Set viewport to minimap region
+      glViewport(minix, miniy, MINIMAP_SIZE, MINIMAP_SIZE);
+
+      glm::mat4 miniView = glm::lookAt(
+          glm::vec3(0.0f, 10.0f, 0.0f),
+          glm::vec3(0.0f, 0.0f, 0.0f),
+          glm::vec3(0.0f, 0.0f, -1.0f));
+
+      // Draw table in minimap
+      glUseProgram(tableShader);
+      glUniformMatrix4fv(tableMVPLoc, 1, GL_FALSE,
+                         glm::value_ptr(projection * miniView * tableModel));
+      glBindVertexArray(VAOs[0]);
+      glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+      // Draw ball in minimap
+      glUseProgram(ballShader);
+      glUniformMatrix4fv(ballMVPLoc, 1, GL_FALSE,
+                         glm::value_ptr(projection * miniView * ballModel));
+      glBindVertexArray(ballVAO);
+      glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+      // Swap buffers and poll events
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+   }
+
+   // Cleanup and exit
+   glDeleteVertexArrays(1, VAOs);
+   glDeleteBuffers(2, Buffers);
+   glDeleteVertexArrays(1, &ballVAO);
+   glDeleteBuffers(1, &ballVBO);
+   glDeleteProgram(tableShader);
+   glDeleteProgram(ballShader);
+   glfwTerminate();
+   return 0;
 }
