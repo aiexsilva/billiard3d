@@ -1,8 +1,10 @@
 // Ball.cpp
 #include "Ball.hpp"
+#include "ObjLoader.h" // for LoadMTL
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp> // for glm::angleAxis
 #include <glm/gtc/constants.hpp>  // for glm::pi
+#include <unordered_map>
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -24,8 +26,9 @@ namespace P3D
          mtlPath("PoolBalls/" + baseName + ".mtl"),
          texPath("PoolBalls/PoolBalluv" + baseName.substr(4) + ".jpg"),
          position(0.0f),
-         orientation(glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f))), // Rotate 180° around Z to orient the number plate correctly
-         scale(0.06f)                                                                // scale to match table dimensions
+         // Rotate 180° around Z to orient the number plate correctly
+         orientation(glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f))),
+         scale(0.06f)
    {
    }
 
@@ -37,11 +40,22 @@ namespace P3D
    {
       if (!meshInitialized)
       {
-         loadMesh();     // load vertices, uvs, normals and material
-         setupBuffers(); // upload interleaved data (pos, uv, normal)
+         // First instance: load geometry and its material
+         loadMesh();
+         setupBuffers();
          meshInitialized = true;
       }
-      // Each instance loads its own texture
+
+      // Every instance: parse its own material from .mtl
+      {
+         std::unordered_map<std::string, Material> mats;
+         if (LoadMTL(mtlPath.c_str(), mats) && !mats.empty())
+         {
+            this->material = mats.begin()->second;
+         }
+      }
+
+      // Load texture according to material.map_Kd
       loadTexture();
    }
 
@@ -53,9 +67,22 @@ namespace P3D
       glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(orientation) * glm::scale(glm::mat4(1.0f), glm::vec3(scale));
       // Compute MVP
       glm::mat4 mvp = projection * view * model;
-      // Send MVP uniform
-      GLint loc = glGetUniformLocation(shaderProgram, "MVP");
-      glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mvp));
+      GLint locMVP = glGetUniformLocation(shaderProgram, "MVP");
+      glUniformMatrix4fv(locMVP, 1, GL_FALSE, glm::value_ptr(mvp));
+
+      // Send material uniforms
+      GLint locKa = glGetUniformLocation(shaderProgram, "uMaterial.ambient");
+      glUniform3fv(locKa, 1, glm::value_ptr(material.Ka));
+      GLint locKd = glGetUniformLocation(shaderProgram, "uMaterial.diffuse");
+      glUniform3fv(locKd, 1, glm::value_ptr(material.Kd));
+      GLint locKs = glGetUniformLocation(shaderProgram, "uMaterial.specular");
+      glUniform3fv(locKs, 1, glm::value_ptr(material.Ks));
+      GLint locNs = glGetUniformLocation(shaderProgram, "uMaterial.shininess");
+      glUniform1f(locNs, material.Ns);
+
+      // Ensure texture sampler is set to unit 0
+      GLint locTex = glGetUniformLocation(shaderProgram, "uTex");
+      glUniform1i(locTex, 0);
 
       // Bind this instance's texture to unit 0
       glActiveTexture(GL_TEXTURE0);
@@ -69,14 +96,14 @@ namespace P3D
 
    void Ball::loadMesh()
    {
-      // Load mesh + material from OBJ/MTL
+      // Load mesh + first material (will update per instance in Install)
       Material mat;
       if (!LoadObject(objPath.c_str(), vertices, uvs, normals, mat))
       {
          std::cerr << "Failed to load OBJ: " << objPath << "\n";
          return;
       }
-      // Store the loaded material for use in shaders later
+      // Store for the first instance
       this->material = mat;
    }
 
@@ -93,7 +120,7 @@ namespace P3D
       data.reserve(vertices.size());
       for (size_t i = 0; i < vertices.size(); ++i)
       {
-         // Flip U coordinate to correct horizontal mirroring of numbers
+         // Flip U coordinate if needed
          glm::vec2 flippedUV(1.0f - uvs[i].x, uvs[i].y);
          data.push_back({vertices[i], flippedUV, normals[i]});
       }
@@ -130,11 +157,15 @@ namespace P3D
 
    void Ball::loadTexture()
    {
+      // Resolve texture filename from material.map_Kd
+      std::string dir = mtlPath.substr(0, mtlPath.find_last_of("/\\") + 1);
+      std::string file = dir + material.map_Kd;
+
       int w, h, n;
-      unsigned char *data = stbi_load(texPath.c_str(), &w, &h, &n, STBI_rgb);
+      unsigned char *data = stbi_load(file.c_str(), &w, &h, &n, STBI_rgb);
       if (!data)
       {
-         std::cerr << "Failed to load texture: " << texPath << "\n";
+         std::cerr << "Failed to load texture: " << file << "\n";
          return;
       }
       glGenTextures(1, &textureID);

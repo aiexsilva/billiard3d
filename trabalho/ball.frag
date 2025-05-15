@@ -1,10 +1,27 @@
 #version 410 core
 
 in vec2 TexCoord;
+in vec3 Normal;
+
 out vec4 FragColor;
 
+// Material properties parsed from .mtl
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
+uniform Material uMaterial;
 uniform sampler2D uTex;
 
 void main() {
-    FragColor = texture(uTex, TexCoord);
+    // Sample the texture
+    vec3 texColor = texture(uTex, TexCoord).rgb;
+
+    // Ambient test lighting
+    float ambientStrength = 0.8; // ambient light intensity
+    vec3 ambient = ambientStrength * texColor;
+
+    FragColor = vec4(ambient, 1.0);
 }

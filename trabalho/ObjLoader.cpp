@@ -58,12 +58,18 @@ namespace P3D
                    std::vector<glm::vec3> &out_normals,
                    Material &out_material)
    {
+      // Temporary storage for vertex data
       std::vector<glm::vec3> temp_vertices;
       std::vector<glm::vec2> temp_uvs;
       std::vector<glm::vec3> temp_normals;
 
+      // Map of materials parsed from .mtl
       std::unordered_map<std::string, Material> materials;
       std::string currentMaterial;
+
+      // Determine base directory of OBJ file for resolving relative paths
+      std::string objPathStr(path);
+      std::string baseDir = objPathStr.substr(0, objPathStr.find_last_of("/\\") + 1);
 
       FILE *file = fopen(path, "r");
       if (!file)
@@ -83,7 +89,9 @@ namespace P3D
          {
             char mtlName[128];
             fscanf(file, "%s\n", mtlName);
-            LoadMTL(mtlName, materials);
+            // Build full path to the .mtl file and load it
+            std::string fullMtlPath = baseDir + std::string(mtlName);
+            LoadMTL(fullMtlPath.c_str(), materials);
          }
          else if (strcmp(lineHeader, "usemtl") == 0)
          {
