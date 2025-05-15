@@ -1,10 +1,12 @@
+// Ball.cpp
 #include "Ball.hpp"
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp> // for glm::angleAxis
+#include <glm/gtc/constants.hpp>  // for glm::pi
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 
 namespace P3D
 {
@@ -20,7 +22,10 @@ namespace P3D
    Ball::Ball(const std::string &baseName)
        : objPath("PoolBalls/" + baseName + ".obj"),
          mtlPath("PoolBalls/" + baseName + ".mtl"),
-         texPath("PoolBalls/PoolBalluv" + baseName.substr(4) + ".jpg")
+         texPath("PoolBalls/PoolBalluv" + baseName.substr(4) + ".jpg"),
+         position(0.0f),
+         orientation(glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f))), // Rotate 180° around Z to orient the number plate correctly
+         scale(0.06f)                                                                // scale to match table dimensions
    {
    }
 
@@ -32,8 +37,8 @@ namespace P3D
    {
       if (!meshInitialized)
       {
-         loadMesh();
-         setupBuffers();
+         loadMesh();     // load vertices, uvs, normals and material
+         setupBuffers(); // upload interleaved data (pos, uv, normal)
          meshInitialized = true;
       }
       // Each instance loads its own texture
@@ -44,9 +49,11 @@ namespace P3D
                      const glm::mat4 &view,
                      const glm::mat4 &projection) const
    {
-      // Calculate Model–View–Projection matrix
+      // Compute Model matrix
       glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(orientation) * glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+      // Compute MVP
       glm::mat4 mvp = projection * view * model;
+      // Send MVP uniform
       GLint loc = glGetUniformLocation(shaderProgram, "MVP");
       glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mvp));
 
@@ -56,31 +63,42 @@ namespace P3D
 
       // Draw interleaved mesh
       glBindVertexArray(VAO);
-      glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
+      glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
       glBindVertexArray(0);
    }
 
    void Ball::loadMesh()
    {
-      // Load positions, UVs, normals from OBJ
-      if (!LoadObject(objPath.c_str(), vertices, uvs, normals))
+      // Load mesh + material from OBJ/MTL
+      Material mat;
+      if (!LoadObject(objPath.c_str(), vertices, uvs, normals, mat))
+      {
          std::cerr << "Failed to load OBJ: " << objPath << "\n";
+         return;
+      }
+      // Store the loaded material for use in shaders later
+      this->material = mat;
    }
 
    void Ball::setupBuffers()
    {
-      // Create interleaved array of {pos, uv}
+      // Interleaved vertex struct: pos, uv, normal
       struct V
       {
          glm::vec3 p;
          glm::vec2 uv;
+         glm::vec3 n;
       };
       std::vector<V> data;
       data.reserve(vertices.size());
       for (size_t i = 0; i < vertices.size(); ++i)
-         data.push_back({vertices[i], uvs[i]});
+      {
+         // Flip U coordinate to correct horizontal mirroring of numbers
+         glm::vec2 flippedUV(1.0f - uvs[i].x, uvs[i].y);
+         data.push_back({vertices[i], flippedUV, normals[i]});
+      }
 
-      // Generate VAO and VBO once
+      // Generate and bind VAO/VBO once
       glGenVertexArrays(1, &VAO);
       glGenBuffers(1, &VBO);
 
@@ -90,6 +108,7 @@ namespace P3D
                    data.size() * sizeof(V),
                    data.data(),
                    GL_STATIC_DRAW);
+
       // position at layout 0
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
                             sizeof(V),
@@ -100,6 +119,12 @@ namespace P3D
                             sizeof(V),
                             (void *)offsetof(V, uv));
       glEnableVertexAttribArray(1);
+      // normal at layout 2
+      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE,
+                            sizeof(V),
+                            (void *)offsetof(V, n));
+      glEnableVertexAttribArray(2);
+
       glBindVertexArray(0);
    }
 

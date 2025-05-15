@@ -1,45 +1,46 @@
-#pragma once
+// Ball.hpp
+#ifndef BALL_HPP
+#define BALL_HPP
 
 #include <string>
 #include <vector>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <GL/glew.h>
-#include "ObjLoader.h"
+#include "ObjLoader.h" // for P3D::Material
 
 namespace P3D
 {
-
-   //------------------------------------------------------------------------------
-   // Ball.hpp
-   // A class representing a pool ball mesh + material + texture, instantiated per-ball.
-   // Uses ObjLoader to load .obj/.mtl and OpenGL for VAO/VBO + texture.
-   //------------------------------------------------------------------------------
-
    class Ball
    {
    public:
-      /// Construct a Ball pointing to files in PoolBalls/, named like "Ball1"
-      /// Expects: PoolBalls/Ball1.obj, PoolBalls/Ball1.mtl, PoolBalls/PoolBalluv1.jpg
       Ball(const std::string &baseName);
       ~Ball();
 
-      /// Upload mesh, normals, uvs and texture to GPU (call once)
+      // Install mesh, buffers and texture
       void Install();
 
-      /// Render the ball with given shader and camera matrices
-      /// shaderProgram must have uniforms "MVP" and sampler2D "uTex"
+      // Render the ball given the camera view/projection
       void Render(GLuint shaderProgram,
                   const glm::mat4 &view,
                   const glm::mat4 &projection) const;
 
-      // Per-instance transform
-      glm::vec3 position{0.0f};
-      glm::quat orientation{1, 0, 0, 0};
-      float scale{0.05f};
+      // Public transform
+      glm::vec3 position;
+      glm::quat orientation;
+      float scale = 1.0f;
 
    private:
-      // Static mesh data shared by all Ball instances
+      // Load geometry + material from OBJ/MTL
+      void loadMesh();
+
+      // Setup VAO/VBO with position, UV and normal
+      void setupBuffers();
+
+      // Load the diffuse texture
+      void loadTexture();
+
+      // Static mesh data shared by all instances
       static bool meshInitialized;
       static GLuint VAO;
       static GLuint VBO;
@@ -47,18 +48,15 @@ namespace P3D
       static std::vector<glm::vec2> uvs;
       static std::vector<glm::vec3> normals;
 
-      // Per-instance texture
+      // Instance data
       GLuint textureID;
-
-      // Paths for this ball's resources
       std::string objPath;
       std::string mtlPath;
       std::string texPath;
 
-      // Helpers
-      void loadMesh();     // uses ObjLoader to fill vertices, uvs, normals
-      void setupBuffers(); // glGenVAO/VBO and upload interleaved data (pos+uv)
-      void loadTexture();  // loads JPEG via stb_image into textureID
+      // Material loaded from .mtl
+      Material material;
    };
+}
 
-} // namespace P3D
+#endif // BALL_HPP
