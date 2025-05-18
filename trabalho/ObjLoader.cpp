@@ -1,154 +1,151 @@
-// ObjLoader.cpp
+#include <iostream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include "ObjLoader.h"
-#include <fstream>
-#include <sstream>
-#include <cstring>
 
-namespace P3D
-{
+using namespace std;
 
-   bool LoadMTL(const char *path, std::unordered_map<std::string, Material> &materials)
-   {
-      std::ifstream file(path);
-      if (!file.is_open())
-      {
-         std::cerr << "Could not open MTL file: " << path << "\n";
-         return false;
-      }
-      std::string line;
-      std::string currentName;
-      while (std::getline(file, line))
-      {
-         std::istringstream iss(line);
-         std::string prefix;
-         iss >> prefix;
-         if (prefix == "newmtl")
-         {
-            iss >> currentName;
-            materials[currentName] = Material{};
-         }
-         else if (prefix == "Ka")
-         {
-            iss >> materials[currentName].Ka.x >> materials[currentName].Ka.y >> materials[currentName].Ka.z;
-         }
-         else if (prefix == "Kd")
-         {
-            iss >> materials[currentName].Kd.x >> materials[currentName].Kd.y >> materials[currentName].Kd.z;
-         }
-         else if (prefix == "Ks")
-         {
-            iss >> materials[currentName].Ks.x >> materials[currentName].Ks.y >> materials[currentName].Ks.z;
-         }
-         else if (prefix == "Ns")
-         {
-            iss >> materials[currentName].Ns;
-         }
-         else if (prefix == "map_Kd")
-         {
-            iss >> materials[currentName].map_Kd;
-         }
-         // ignore other prefixes
-      }
-      return true;
-   }
 
-   bool LoadObject(const char *path,
-                   std::vector<glm::vec3> &out_vertices,
-                   std::vector<glm::vec2> &out_uvs,
-                   std::vector<glm::vec3> &out_normals,
-                   Material &out_material)
-   {
-      // Temporary storage for vertex data
-      std::vector<glm::vec3> temp_vertices;
-      std::vector<glm::vec2> temp_uvs;
-      std::vector<glm::vec3> temp_normals;
+bool LoadObject(const std::string filepath, std::vector<glm::vec3> & out_vertices, std::vector<glm::vec2> & out_uvs, std::vector<glm::vec3> & out_normals, std::string& out_mtlFilename){
 
-      // Map of materials parsed from .mtl
-      std::unordered_map<std::string, Material> materials;
-      std::string currentMaterial;
+    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
+    std::vector< glm::vec3 > temp_vertices;
+    std::vector< glm::vec2 > temp_uvs;
+    std::vector< glm::vec3 > temp_normals;
 
-      // Determine base directory of OBJ file for resolving relative paths
-      std::string objPathStr(path);
-      std::string baseDir = objPathStr.substr(0, objPathStr.find_last_of("/\\") + 1);
+    FILE * filename = fopen(filepath.c_str(), "r");
+    if(filename == NULL){
+        std::cout<<"unable to open file\n";
+        return -1;
+    }
 
-      FILE *file = fopen(path, "r");
-      if (!file)
-      {
-         std::cerr << "Unable to open OBJ file: " << path << "\n";
-         return false;
-      }
-
-      while (true)
-      {
-         char lineHeader[128];
-         int res = fscanf(file, "%s", lineHeader);
-         if (res == EOF)
+    while(true){
+        char lineHeader[128];
+        int res = fscanf(filename, "%s", lineHeader);
+        if (res == EOF){
             break;
-
-         if (strcmp(lineHeader, "mtllib") == 0)
-         {
-            char mtlName[128];
-            fscanf(file, "%s\n", mtlName);
-            // Build full path to the .mtl file and load it
-            std::string fullMtlPath = baseDir + std::string(mtlName);
-            LoadMTL(fullMtlPath.c_str(), materials);
-         }
-         else if (strcmp(lineHeader, "usemtl") == 0)
-         {
-            char matName[128];
-            fscanf(file, "%s\n", matName);
-            currentMaterial = matName;
-            // assume single material per object, capture on first use
-            out_material = materials[currentMaterial];
-         }
-         else if (strcmp(lineHeader, "v") == 0)
-         {
-            glm::vec3 vertex;
-            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
-            temp_vertices.push_back(vertex);
-         }
-         else if (strcmp(lineHeader, "vt") == 0)
-         {
-            glm::vec2 uv;
-            fscanf(file, "%f %f\n", &uv.x, &uv.y);
-            temp_uvs.push_back(uv);
-         }
-         else if (strcmp(lineHeader, "vn") == 0)
-         {
-            glm::vec3 normal;
-            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
-            temp_normals.push_back(normal);
-         }
-         else if (strcmp(lineHeader, "f") == 0)
-         {
-            unsigned int vi[3], uvi[3], ni[3];
-            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                 &vi[0], &uvi[0], &ni[0],
-                                 &vi[1], &uvi[1], &ni[1],
-                                 &vi[2], &uvi[2], &ni[2]);
-            if (matches != 9)
-            {
-               std::cerr << "Face parse error in: " << path << "\n";
-               fclose(file);
-               return false;
+        }else{
+            //gets the name of the mtl file off obj file
+            if(strcmp(lineHeader, "mtllib") == 0){
+                char MTLFilename[128];
+                fscanf(filename, "%s", MTLFilename);
+                out_mtlFilename = MTLFilename;
             }
-            for (int i = 0; i < 3; ++i)
-            {
-               out_vertices.push_back(temp_vertices[vi[i] - 1]);
-               out_uvs.push_back(temp_uvs[uvi[i] - 1]);
-               out_normals.push_back(temp_normals[ni[i] - 1]);
+            //read vertices
+            if (strcmp(lineHeader, "v") == 0 ){
+                glm::vec3 vertex;
+                fscanf(filename, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+                temp_vertices.push_back(vertex);
+            //read uvs
+            }else if (strcmp(lineHeader, "vt") == 0 ){
+                glm::vec2 uv;
+                fscanf(filename, "%f %f\n", &uv.x, &uv.y );
+                temp_uvs.push_back(uv);
+            //read normals
+            }else if (strcmp(lineHeader, "vn") == 0 ){
+                glm::vec3 normal;
+                fscanf(filename, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+                temp_normals.push_back(normal);
+            }else if ( strcmp( lineHeader, "f" ) == 0 ){
+                unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+                int matches = fscanf(filename, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
+                         &vertexIndex[0], &uvIndex[0], &normalIndex[0],
+                         &vertexIndex[1], &uvIndex[1], &normalIndex[1],
+                         &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+
+                if (matches != 9){
+                    std::cout << "Unable to read file\n";
+                    return false;
+                }
+
+                for (int i = 0; i < 3; ++i) {
+                    out_vertices.push_back(temp_vertices[vertexIndex[i] - 1]);
+                    out_uvs.push_back(temp_uvs[uvIndex[i] - 1]);
+                    out_normals.push_back(temp_normals[normalIndex[i] - 1]);
+                }   
             }
-         }
-         else
-         {
-            // skip unrecognized line
-            char buffer[256];
-            fgets(buffer, 256, file);
-         }
-      }
+        }
+    }
+    
+    fclose(filename); 
+    return true;
+}
 
-      fclose(file);
-      return true;
-   }
+bool LoadMTL(const std::string& filepath, std::vector<Material>& materials) {
+    Material currentMaterial;
+    FILE * filename = fopen(filepath.c_str(), "r");
+    if(filename == NULL){
+        std::cout << "unable to open MTL file\n";
+        return false;
+    }
 
-} // namespace P3D
+    while(true) {
+        char lineHeader[128];
+        int res = fscanf(filename, "%s", lineHeader);
+        if (res == EOF) {
+            break;
+        } else {
+            if (strcmp(lineHeader, "newmtl") == 0)
+            {
+                // salva o material anterior (se existir)
+                if (!currentMaterial.name.empty())
+                {
+                    materials.push_back(currentMaterial);
+                    currentMaterial = Material(); // reinicia todos os campos
+                }
+                char nameBuf[128];
+                fscanf(filename, "%127s", nameBuf);
+                currentMaterial.name = nameBuf;
+            }
+            if (strcmp(lineHeader, "Ns") == 0)
+            {
+                fscanf(filename, "%f\n", &currentMaterial.Ns);
+            }
+            if (strcmp(lineHeader, "Ka") == 0)
+            {
+                glm::vec3 ambient;
+                fscanf(filename, "%f %f %f\n", &ambient.x, &ambient.y, &ambient.z);
+                currentMaterial.Ka = ambient;
+            }
+            if (strcmp(lineHeader, "Kd") == 0)
+            {
+                glm::vec3 diffuse;
+                fscanf(filename, "%f %f %f\n", &diffuse.x, &diffuse.y, &diffuse.z);
+                currentMaterial.Kd = diffuse;
+            }
+            if (strcmp(lineHeader, "Ks") == 0)
+            {
+                glm::vec3 specular;
+                fscanf(filename, "%f %f %f\n", &specular.x, &specular.y, &specular.z);
+                currentMaterial.Ks = specular;
+            }
+            if (strcmp(lineHeader, "Ni") == 0)
+            {
+                fscanf(filename, "%f\n", &currentMaterial.Ni);
+            }
+            if (strcmp(lineHeader, "d") == 0)
+            {
+                fscanf(filename, "%f\n", &currentMaterial.d);
+            }
+            if (strcmp(lineHeader, "illum") == 0)
+            {
+                fscanf(filename, "%d\n", &currentMaterial.illum);
+            }
+            if (strcmp(lineHeader, "map_Kd") == 0)
+            {
+                char texturePath[128];
+                fscanf(filename, "%s", texturePath);
+                currentMaterial.map_Kd = texturePath;
+            }
+            
+        }
+    }
+    fclose(filename);
+
+    if (!currentMaterial.name.empty()) {
+        materials.push_back(currentMaterial);
+    }
+
+    return true;
+}

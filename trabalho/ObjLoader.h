@@ -1,35 +1,28 @@
-// ObjLoader.h
 #ifndef OBJ_LOADER_H
 #define OBJ_LOADER_H
 
 #include <iostream>
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
+#include <string>
 
-namespace P3D
-{
-   // Material properties read from .mtl
-   struct Material
-   {
-      glm::vec3 Ka;       // ambient reflection coefficient
-      glm::vec3 Kd;       // diffuse reflection coefficient
-      glm::vec3 Ks;       // specular reflection coefficient
-      float Ns;           // shininess exponent
-      std::string map_Kd; // diffuse texture filename
-   };
+using namespace std;
 
-   // Parse a .mtl file and fill the materials map
-   bool LoadMTL(const char *path, std::unordered_map<std::string, Material> &materials);
+struct Material {
+    std::string name;
+    glm::vec3 Ka;
+    glm::vec3 Kd;
+    glm::vec3 Ks;
+    float Ns;
+    float Ni;
+    float d;
+    int illum;
+    std::string map_Kd;
+};
 
-   // Load an OBJ, including vertices, uvs, normals and the associated material
-   bool LoadObject(const char *path,
-                   std::vector<glm::vec3> &out_vertices,
-                   std::vector<glm::vec2> &out_uvs,
-                   std::vector<glm::vec3> &out_normals,
-                   Material &out_material);
-}
+bool LoadObject(const std::string filepath, std::vector<glm::vec3>& out_vertices, std::vector<glm::vec2>& out_uvs, std::vector<glm::vec3>& out_normals, std::string& out_mtlFilename);
+bool LoadMTL(const std::string& filepath, std::vector<Material>& materials);
 
-#endif // OBJ_LOADER_H
+#endif

@@ -13,11 +13,11 @@ struct Material {
     float shininess;
 };
 uniform Material uMaterial;
-uniform sampler2D uTex;
+uniform sampler2D textureSampler;
 
 void main() {
     // Sample the texture
-    vec3 texColor = texture(uTex, TexCoord).rgb;
+    vec3 texColor = texture(textureSampler, TexCoord).rgb;
 
     // Ambient test lighting
     float ambientStrength = 0.8; // ambient light intensity
