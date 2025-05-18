@@ -9,7 +9,7 @@
 #include "ShaderLoader.h" 
 #include "ObjLoader.h"
 #include "RenderProcessing.h"
-#include "Controls.cpp"
+#include "Controls.h"
 
 using namespace std;
 using namespace Controls;

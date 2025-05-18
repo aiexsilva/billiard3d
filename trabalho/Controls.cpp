@@ -1,11 +1,4 @@
-#include <iostream>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <OpenGL/gl.h>
-#include <glm/glm.hpp>
-
-#define height 800
-#define width 1200
+#include "Controls.h"
 
 namespace Controls{
 
