@@ -24,6 +24,8 @@ namespace RenderProcessing{
     GLuint RenderPro::LoadTexture(const std::string filepath){
         int width, height, nrChannels;
 
+        stbi_set_flip_vertically_on_load(true);
+
         unsigned char* data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
         if (!data) {
             std::cerr << "Failed to load texture: " << filepath << std::endl;
@@ -44,7 +46,7 @@ namespace RenderProcessing{
         glGenerateMipmap(GL_TEXTURE_2D); 
         
         stbi_image_free(data); 
-        
+
         return textureID; 
 
     }
@@ -133,6 +135,8 @@ namespace RenderProcessing{
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, scale);
+        model = glm::translate(model, position);
+        model = glm::translate(model, rotation);
         //camera position, where the camera is looking at, up direction on y axis
         glm::mat4 view = glm::lookAt(glm::vec3(1.5f, 1.5f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         //angle which gives u more or less zoom, 0.1 and 100 define that objects closer or further than that will not be rendered

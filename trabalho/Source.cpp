@@ -9,16 +9,16 @@
 #include "ShaderLoader.h" 
 #include "ObjLoader.h"
 #include "RenderProcessing.h"
-#include "Controls.cpp"
+// #include "Controls.cpp"
 
 using namespace std;
-using namespace Controls;
+// using namespace Controls;
 
 #define height 800
 #define width 1200
 //#define GLEW_STATIC
 RenderProcessing::RenderPro tableRender;
-RenderProcessing::RenderPro ballRender;
+vector<RenderProcessing::RenderPro> ballRender(15);
 
 int minimap = 200;
 
@@ -42,8 +42,8 @@ int main() {
     glfwMakeContextCurrent(window);
 
     //using functions from controls.cpp to control cursor and scroll 
-    glfwSetCursorPosCallback(window, cursor_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    // glfwSetCursorPosCallback(window, cursor_callback);
+    // glfwSetScrollCallback(window, scroll_callback);
     //hides cursor
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -119,26 +119,36 @@ int main() {
     tableRender.Install();
     tableRender.Set(tableShader);
 
-    ballRender.Load("PoolBalls/Ball1.obj");
-    ballRender.Install();
-    ballRender.Set(ballShader);
+    for (int i = 0; i < ballRender.size(); i++)
+    {
+        ballRender[i].Set(ballShader);
 
+        ballRender[i].Load("PoolBalls/Ball" + std::to_string(i + 1) + ".obj");
+        ballRender[i].Install();
+
+        ballRender[i].SetScale(glm::vec3(0.05f));
+    }
+    
+    
     //depth testing
     glEnable(GL_DEPTH_TEST);
-
+    
     //main loop
     while (!glfwWindowShouldClose(window)) {
-        handleInput(window);
+        // handleInput(window);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glm::vec3 tablePosition(0.0f, -5.0f, -2.0f);  
+        
+        glm::vec3 tablePosition(0.0f, -1.0f, -2.0f);  
         glm::vec3 tableRotation(0.0f, 0.0f, 0.0f);   
-        // tableRender.Render(tablePosition, tableRotation);
-
-        glm::vec3 ballPosition(0.0f, 3.0f, -2.0f);  
-        glm::vec3 ballRotation(0.0f, 0.0f, 0.0f);  
-        ballRender.SetScale(glm::vec3(0.05f));
-        ballRender.Render(ballPosition, ballRotation);
+        tableRender.Render(tablePosition, tableRotation);
+        
+        // Render the balls in a row
+        for (int i = 0; i < 15; i++)
+        {
+            glm::vec3 ballPosition(1.0f * i * 2, 0.0f, -2.0f);
+            glm::vec3 ballRotation(0.0f, 1.0f, 1.0f);
+            ballRender[i].Render(ballPosition, ballRotation);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
