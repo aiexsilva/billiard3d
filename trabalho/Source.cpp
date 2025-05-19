@@ -15,21 +15,19 @@
 using namespace std;
 
 // 1 is true, 0 is false, change these to enable/disable camera controls
-#define ROTATE_CAMERA 0
+#define ROTATE_CAMERA 1
 #define ZOOM_CAMERA 1
 
 #define height 800
 #define width 1200
 
 RenderProcessing::RenderPro tableRender;
-vector<RenderProcessing::RenderPro> ballRender(15);
 
 vector<Ball::Ball > balls(15);
 
 // size of the minimap in pixels
 const int minimapSize = 400;
-// border thickness in pixels
-const int borderThickness = 4;
+
 
 int main()
 {
@@ -164,6 +162,15 @@ int main()
     {
         Controls::handleInput(window);
 
+        // random animation for now
+        for (int j = 0; j < balls.size(); j++)
+        {
+            glm::vec3 position = balls[j].getPosition();
+            glm::vec3 offset(0.01f, 0.00f, 0.01f);
+            position += offset;
+            balls[j].setPosition(position);
+        }
+
         // clear full screen
         glDisable(GL_SCISSOR_TEST);
 
@@ -174,16 +181,16 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render main scene
-        glm::vec3 tablePosition(0.0f, -0.15f, 0.0f);
+        glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
         glm::vec3 tableRotation(0.0f, 0.0f, 0.0f);
         tableRender.SetScale(glm::vec3(1.5f));
         tableRender.Render(tablePosition, tableRotation);
-
-        for (int i = 0; i < balls.size(); i++)
+        
+        for(auto &ball : balls)
         {
             RenderProcessing::RenderPro ballMainRender;
-            balls[i].getRenderPro(ballMainRender);
-            ballMainRender.Render(balls[i].getPosition(), balls[i].getRotation());
+            ball.getRenderPro(ballMainRender);
+            ballMainRender.Render(ball.getPosition(), ball.getRotation());
         }
 
         // define minimap position
@@ -213,11 +220,11 @@ int main()
         // render table & balls in minimap
         tableRender.RenderInMinimap(tablePosition, tableRotation);
         tableRender.SetScale(glm::vec3(1.5f));
-        for (int i = 0; i < balls.size(); i++)
+        for(auto &ball : balls)
         {
-            RenderProcessing::RenderPro ballRender;
-            balls[i].getRenderPro(ballRender);
-            ballRender.RenderInMinimap(balls[i].getPosition(), balls[i].getRotation());
+            RenderProcessing::RenderPro ballMainRender;
+            ball.getRenderPro(ballMainRender);
+            ballMainRender.RenderInMinimap(ball.getPosition(), ball.getRotation());
         }
 
         // swap buffers & poll events
