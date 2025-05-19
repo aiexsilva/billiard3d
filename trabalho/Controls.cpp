@@ -9,15 +9,15 @@
 
 namespace Controls{
 
-    // Camera spherical coordinates for orbital view
-    float radius = 3.0f; // distance from table center
-    float yaw = 0.0f;    // horizontal angle
-    float pitch = 20.0f; // vertical angle
-    const float sensitivity = 0.1f;
-    const float zoomSpeed = 1.0f;
-    bool firstMouse = true;
-    float lastX = width * 0.5f;
-    float lastY = height * 0.5f;
+    // Camera spherical coordinates for orbital view 
+    float radius = 3.0f; // distance from table center 
+    float yaw = 0.0f;    // horizontal angle 
+    float pitch = 20.0f; // vertical angle 
+    const float sensitivity = 0.1f; 
+    const float zoomSpeed = 1.0f; 
+    bool firstMouse = true; 
+    float lastX = width * 0.5f; 
+    float lastY = height * 0.5f; 
 
     // Close window on ESC key press
     void handleInput(GLFWwindow *window){

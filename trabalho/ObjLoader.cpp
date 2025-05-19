@@ -88,11 +88,11 @@ bool LoadMTL(const std::string& filepath, std::vector<Material>& materials) {
         } else {
             if (strcmp(lineHeader, "newmtl") == 0)
             {
-                // salva o material anterior (se existir)
+                // saves material if it is not empty
                 if (!currentMaterial.name.empty())
                 {
                     materials.push_back(currentMaterial);
-                    currentMaterial = Material(); // reinicia todos os campos
+                    currentMaterial = Material(); // resets current material
                 }
                 char nameBuf[128];
                 fscanf(filename, "%127s", nameBuf);

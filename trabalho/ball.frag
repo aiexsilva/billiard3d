@@ -20,7 +20,7 @@ void main() {
     vec3 texColor = texture(textureSampler, TexCoord).rgb;
 
     // Ambient test lighting
-    float ambientStrength = 0.8; // ambient light intensity
+    float ambientStrength = 0.3; // ambient light intensity
     vec3 ambient = ambientStrength * texColor;
 
     FragColor = vec4(ambient, 1.0);

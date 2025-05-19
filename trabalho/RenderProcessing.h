@@ -13,6 +13,7 @@ public:
     void Install();
     void Set(GLuint shader);
     void Render(glm::vec3 position, glm::vec3 rotation);
+    void RenderInMinimap(glm::vec3 position, glm::vec3 rotation);
     void SetScale(glm::vec3 newScale);
     GLuint LoadTexture(const std::string filepath);
 
