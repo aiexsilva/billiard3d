@@ -10,6 +10,7 @@
 #include "ObjLoader.h"
 #include "RenderProcessing.h"
 #include "Controls.h"
+#include "Ball.h"
 
 using namespace std;
 
@@ -22,6 +23,8 @@ using namespace std;
 
 RenderProcessing::RenderPro tableRender;
 vector<RenderProcessing::RenderPro> ballRender(15);
+
+vector<Ball::Ball > balls(15);
 
 // size of the minimap in pixels
 const int minimapSize = 400;
@@ -130,12 +133,30 @@ int main()
     tableRender.Install();
     tableRender.Set(tableShader);
 
-    for (int i = 0; i < (int)ballRender.size(); i++)
+    for (int i = 0; i < 4; i++)
     {
-        ballRender[i].Set(ballShader);
-        ballRender[i].Load("PoolBalls/Ball" + std::to_string(i + 1) + ".obj");
-        ballRender[i].Install();
-        ballRender[i].SetScale(glm::vec3(0.05f));
+        for (int j = 0; j < 4; j++)
+        {
+            if ((i + 1) * (j + 1) > 15)
+                break;
+
+            RenderProcessing::RenderPro ballRenderPro;
+            
+            balls[j + (i * 4)].getRenderPro(ballRenderPro);
+
+            ballRenderPro.Set(ballShader);
+            ballRenderPro.Load("PoolBalls/Ball" + std::to_string(j + (i * 4) + 1) + ".obj");
+            ballRenderPro.Install();
+            ballRenderPro.SetScale(glm::vec3(0.05f));
+            
+            glm::vec3 ballPosition(-6.0f + i * 4, 1.0f, -6.0f + j * 4);
+            glm::vec3 ballRotation(0.0f, 1.0f, 1.0f);
+            
+            balls[j + (i * 4)].setPosition(ballPosition);
+            balls[j + (i * 4)].setRotation(ballRotation);
+            
+            balls[j + (i * 4)].setRenderPro(ballRenderPro);
+        }
     }
 
     // main loop
@@ -158,18 +179,12 @@ int main()
         tableRender.SetScale(glm::vec3(1.5f));
         tableRender.Render(tablePosition, tableRotation);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < balls.size(); i++)
         {
-            for (int j = 0; j < 4; j++)
-            {
-                if ((i + 1) * (j + 1) > 15)
-                    break;
-                glm::vec3 ballPosition(-6.0f + i * 4, 1.0f, -6.0f + j * 4);
-                glm::vec3 ballRotation(0.0f, 1.0f, 1.0f);
-                ballRender[j + 4 * i].Render(ballPosition, ballRotation);
-            }
+            RenderProcessing::RenderPro ballMainRender;
+            balls[i].getRenderPro(ballMainRender);
+            ballMainRender.Render(balls[i].getPosition(), balls[i].getRotation());
         }
-
 
         // define minimap position
         int minix = fbW - minimapSize - 10; 
@@ -198,16 +213,11 @@ int main()
         // render table & balls in minimap
         tableRender.RenderInMinimap(tablePosition, tableRotation);
         tableRender.SetScale(glm::vec3(1.5f));
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < balls.size(); i++)
         {
-            for (int j = 0; j < 4; j++)
-            {
-                if ((i + 1) * (j + 1) > 15)
-                    break;
-                glm::vec3 ballPos(-6.0f + i * 4, 1.0f, -6.0f + j * 4);
-                glm::vec3 ballRot(0.0f, 1.0f, 1.0f);
-                ballRender[j + 4 * i].RenderInMinimap(ballPos, ballRot);
-            }
+            RenderProcessing::RenderPro ballRender;
+            balls[i].getRenderPro(ballRender);
+            ballRender.RenderInMinimap(balls[i].getPosition(), balls[i].getRotation());
         }
 
         // swap buffers & poll events

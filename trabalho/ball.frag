@@ -15,12 +15,14 @@ struct Material {
 uniform Material uMaterial;
 uniform sampler2D textureSampler;
 
+uniform bool uUseLighting;
+
 void main() {
     // Sample the texture
     vec3 texColor = texture(textureSampler, TexCoord).rgb;
 
     // Ambient test lighting
-    float ambientStrength = 0.3; // ambient light intensity
+    float ambientStrength = uUseLighting ? 0.3 : 1.0; // ambient light intensity
     vec3 ambient = ambientStrength * texColor;
 
     FragColor = vec4(ambient, 1.0);

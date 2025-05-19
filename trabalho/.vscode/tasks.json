@@ -21,6 +21,7 @@
        "${workspaceFolder}/ObjLoader.cpp",
        "${workspaceFolder}/Source.cpp",
        "${workspaceFolder}/Controls.cpp",
+       "${workspaceFolder}/Ball.cpp",
        "-o",
        "${workspaceFolder}/app",
        "-framework",

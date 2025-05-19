@@ -132,6 +132,7 @@ namespace RenderProcessing
     void RenderPro::Render(glm::vec3 position, glm::vec3 rotation)
     {
         glUseProgram(shader);
+        glUniform1i(glGetUniformLocation(shader, "uUseLighting"), 1);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -161,6 +162,7 @@ namespace RenderProcessing
     void RenderPro::RenderInMinimap(glm::vec3 position, glm::vec3 rotation)
     {
         glUseProgram(shader);
+        glUniform1i(glGetUniformLocation(shader, "uUseLighting"), 0);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
