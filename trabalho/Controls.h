@@ -3,12 +3,14 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
+#include "Ball.h"
 
 namespace Controls
 {
-   extern float radius; 
-   extern float yaw; 
-   extern float pitch;  
+   extern float radius;
+   extern float yaw;
+   extern float pitch;
 
    extern const float sensitivity;
    extern const float zoomSpeed;
@@ -17,7 +19,7 @@ namespace Controls
    extern float lastX;
    extern float lastY;
 
-   void handleInput(GLFWwindow *window);
+   void handleInput(GLFWwindow *window, vector<Ball::Ball> &balls);
    void cursor_callback(GLFWwindow *window, double xpos, double ypos);
    void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 }
