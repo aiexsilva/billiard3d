@@ -22,6 +22,7 @@
        "${workspaceFolder}/Source.cpp",
        "${workspaceFolder}/Controls.cpp",
        "${workspaceFolder}/Ball.cpp",
+       "${workspaceFolder}/Lights.cpp",
        "-o",
        "${workspaceFolder}/app",
        "-framework",

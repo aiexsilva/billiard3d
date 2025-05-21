@@ -11,6 +11,7 @@
 #include "RenderProcessing.h"
 #include "Controls.h"
 #include "Ball.h"
+#include "Lights.h"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ using namespace std;
 
 RenderProcessing::RenderPro tableRender;
 
-vector<Ball::Ball > balls(15);
+vector<Ball::Ball > balls(16);
 
 // size of the minimap in pixels
 const int minimapSize = 400;
@@ -135,7 +136,7 @@ int main()
     {
         for (int j = 0; j < 4; j++)
         {
-            if ((i + 1) * (j + 1) > 15)
+            if ((i + 1) * (j + 1) > 16)
                 break;
 
             RenderProcessing::RenderPro ballRenderPro;
@@ -161,6 +162,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         Controls::handleInput(window);
+        Lights::AmbientLight();
 
         // random animation for now
         for (int j = 0; j < balls.size(); j++)
