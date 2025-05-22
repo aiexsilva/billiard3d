@@ -19,7 +19,12 @@ namespace RenderProcessing
         void Render(glm::vec3 position, glm::vec3 rotation);
         void RenderInMinimap(glm::vec3 position, glm::vec3 rotation);
         void SetScale(glm::vec3 newScale);
+        void processInput(GLFWwindow* window);
+        void SetWindow(GLFWwindow* window);
         GLuint LoadTexture(const std::string filepath);
+
+        glm::vec3 modelRotation = glm::vec3(0.0f);
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
 
     private:
         std::vector<glm::vec3> vertices;
@@ -32,6 +37,8 @@ namespace RenderProcessing
         GLuint texture = 0;
         GLuint VAO, VBO;
         GLuint mvpLoc;
+        GLuint modelLoc;
+        GLFWwindow* window = nullptr;
     };
 }
 

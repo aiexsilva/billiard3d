@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <OpenGL/gl.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define height 800
 #define width 1200
@@ -44,7 +45,7 @@ namespace Controls{
         pitch += yoffset;
         pitch = glm::clamp(pitch, -89.0f, 89.0f);
     }
-
+    
     // Zoom in/out by adjusting radius (scroll wheel)
     void scroll_callback(GLFWwindow *window, double /*xoffset*/, double yoffset){
         radius -= float(yoffset) * zoomSpeed;

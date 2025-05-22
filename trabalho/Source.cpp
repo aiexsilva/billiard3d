@@ -11,7 +11,6 @@
 #include "RenderProcessing.h"
 #include "Controls.h"
 #include "Ball.h"
-#include "Lights.h"
 
 using namespace std;
 
@@ -28,7 +27,6 @@ vector<Ball::Ball > balls(16);
 
 // size of the minimap in pixels
 const int minimapSize = 400;
-
 
 int main()
 {
@@ -112,6 +110,7 @@ int main()
         tableVerts.push_back(v);
     }
 
+    
     ShaderInfo table_shader[] = {
         {GL_VERTEX_SHADER, "table.vert"},
         {GL_FRAGMENT_SHADER, "table.frag"},
@@ -162,16 +161,17 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         Controls::handleInput(window);
-        Lights::AmbientLight();
 
-        // random animation for now
+        tableRender.processInput(window);
+
+        /*// random animation for now
         for (int j = 0; j < balls.size(); j++)
         {
             glm::vec3 position = balls[j].getPosition();
             glm::vec3 offset(0.01f, 0.00f, 0.01f);
             position += offset;
             balls[j].setPosition(position);
-        }
+        }*/
 
         // clear full screen
         glDisable(GL_SCISSOR_TEST);
@@ -192,6 +192,9 @@ int main()
         {
             RenderProcessing::RenderPro ballMainRender;
             ball.getRenderPro(ballMainRender);
+            ballMainRender.modelRotation = tableRender.modelRotation;
+            ballMainRender.processInput(window);
+            ballMainRender.SetWindow(window);
             ballMainRender.Render(ball.getPosition(), ball.getRotation());
         }
 

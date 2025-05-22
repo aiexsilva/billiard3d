@@ -11,7 +11,7 @@ namespace Ball
     public:
         Ball();
         ~Ball();
-
+        
         void setPosition(glm::vec3 position);
         void setRotation(glm::vec3 rotation);
 

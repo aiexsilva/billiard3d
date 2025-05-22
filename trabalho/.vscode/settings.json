@@ -51,6 +51,8 @@
         "sstream": "cpp",
         "stack": "cpp",
         "unordered_map": "cpp",
-        "variant": "cpp"
-    }
+        "variant": "cpp",
+        "fstream": "cpp"
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/opt/anaconda3/pkgs/liblief-0.12.3-h313beb8_0/info/recipe/parent/tests"
 }
