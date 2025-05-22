@@ -154,7 +154,7 @@ namespace RenderProcessing
         }
     }
 
-    void RenderPro::Render(glm::vec3 position, glm::vec3 rotation)
+    void RenderPro::Render(glm::vec3 position, glm::vec3 orientation)
     {
         glUseProgram(shader);
         //sends info to shader that variable uUseLighting is 1 or True
@@ -213,7 +213,7 @@ namespace RenderProcessing
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, scale);
         model = glm::translate(model, position);
-        model = glm::translate(model, rotation);
+        model = glm::translate(model, orientation);
         //these are used to rotate the objects however is subject to change
         model = glm::rotate(model, glm::radians(modelRotation.x), glm::vec3(1, 0, 0));
         model = glm::rotate(model, glm::radians(modelRotation.y), glm::vec3(0, 1, 0));

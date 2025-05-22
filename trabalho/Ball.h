@@ -13,17 +13,17 @@ namespace Ball
         ~Ball();
         
         void setPosition(glm::vec3 position);
-        void setRotation(glm::vec3 rotation);
+        void setOrientation(glm::vec3 rotation);
 
         glm::vec3 getPosition();
-        glm::vec3 getRotation();
+        glm::vec3 getOrientation();
         
         void setRenderPro(RenderProcessing::RenderPro renderPro);
         void getRenderPro(RenderProcessing::RenderPro &renderPro);
 
     private:
        glm::vec3 position;
-       glm::vec3 rotation;
+       glm::vec3 orientation;
        RenderProcessing::RenderPro renderPro;
     };
 }

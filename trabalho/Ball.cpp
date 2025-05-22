@@ -5,7 +5,7 @@ namespace Ball
 
    Ball::Ball()
        : position(0.0f, 0.0f, 0.0f),
-         rotation(0.0f, 0.0f, 0.0f),
+         orientation(0.0f, 0.0f, 0.0f),
          renderPro()
    {
    }
@@ -19,9 +19,9 @@ namespace Ball
       this->position = position;
    }
 
-   void Ball::setRotation(glm::vec3 rotation)
+   void Ball::setOrientation(glm::vec3 orientation)
    {
-      this->rotation = rotation;
+      this->orientation = orientation;
    }
 
    void Ball::setRenderPro(RenderProcessing::RenderPro renderPro)
@@ -34,9 +34,9 @@ namespace Ball
    {
       return this->position;
    }
-   glm::vec3 Ball::getRotation()
+   glm::vec3 Ball::getOrientation()
    {
-      return this->rotation;
+      return this->orientation;
    }
    void Ball::getRenderPro(RenderProcessing::RenderPro &renderPro)
    {

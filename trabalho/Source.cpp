@@ -148,10 +148,10 @@ int main()
             ballRenderPro.SetScale(glm::vec3(0.05f));
             
             glm::vec3 ballPosition(-6.0f + i * 4, 1.0f, -6.0f + j * 4);
-            glm::vec3 ballRotation(0.0f, 1.0f, 1.0f);
+            glm::vec3 ballOrientation(0.0f, 1.0f, 1.0f);
             
             balls[j + (i * 4)].setPosition(ballPosition);
-            balls[j + (i * 4)].setRotation(ballRotation);
+            balls[j + (i * 4)].setOrientation(ballOrientation);
             
             balls[j + (i * 4)].setRenderPro(ballRenderPro);
         }
@@ -184,9 +184,9 @@ int main()
 
         // render main scene
         glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
-        glm::vec3 tableRotation(0.0f, 0.0f, 0.0f);
+        glm::vec3 tableOrientation(0.0f, 0.0f, 0.0f);
         tableRender.SetScale(glm::vec3(1.5f));
-        tableRender.Render(tablePosition, tableRotation);
+        tableRender.Render(tablePosition, tableOrientation);
         
         for(auto &ball : balls)
         {
@@ -195,7 +195,7 @@ int main()
             ballMainRender.modelRotation = tableRender.modelRotation;
             ballMainRender.processInput(window);
             ballMainRender.SetWindow(window);
-            ballMainRender.Render(ball.getPosition(), ball.getRotation());
+            ballMainRender.Render(ball.getPosition(), ball.getOrientation());
         }
 
         // define minimap position
@@ -223,13 +223,13 @@ int main()
         glViewport(minix, miniy, minimapSize, minimapSize);
 
         // render table & balls in minimap
-        tableRender.RenderInMinimap(tablePosition, tableRotation);
+        tableRender.RenderInMinimap(tablePosition, tableOrientation);
         tableRender.SetScale(glm::vec3(1.5f));
         for(auto &ball : balls)
         {
             RenderProcessing::RenderPro ballMainRender;
             ball.getRenderPro(ballMainRender);
-            ballMainRender.RenderInMinimap(ball.getPosition(), ball.getRotation());
+            ballMainRender.RenderInMinimap(ball.getPosition(), ball.getOrientation());
         }
 
         // swap buffers & poll events
