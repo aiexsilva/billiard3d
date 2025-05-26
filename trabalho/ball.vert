@@ -11,6 +11,7 @@ out vec3 FragPosition;
 
 uniform mat4 MVP;
 uniform mat4 model;
+uniform mat4 View;
 
 void main() {
     gl_Position = MVP * vec4(position, 1.0);

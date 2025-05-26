@@ -38,6 +38,8 @@ namespace RenderProcessing
         GLuint VAO, VBO;
         GLuint mvpLoc;
         GLuint modelLoc;
+        GLuint viewLoc;
+        GLuint modelViewLoc;
         GLFWwindow* window = nullptr;
     };
 }

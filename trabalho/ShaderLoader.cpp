@@ -38,7 +38,7 @@ static const GLchar* ReadShader(const char* filename) {
 GLuint LoadShaders(ShaderInfo* shaders) {
 	if (shaders == nullptr) return 0;
 
-	// Cria um objeto de programa
+	// Cria um objeto de shader
 	GLuint program = glCreateProgram();
 
 	for (GLint i = 0; shaders[i].type != GL_NONE; i++) {
@@ -93,11 +93,11 @@ GLuint LoadShaders(ShaderInfo* shaders) {
 			return 0;
 		}
 
-		// Anexa o shader ao programa
+		// Anexa o shader ao shader
 		glAttachShader(program, shaders[i].shader);
 	}
 
-	// Linka o programa
+	// Linka o shader
 	glLinkProgram(program);
 
 	// Verifica o estado do processo de linkagem

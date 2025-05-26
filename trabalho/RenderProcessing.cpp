@@ -17,8 +17,9 @@
 #define WIDTH 1200
 
 bool useAmbient = false;
-bool useDiffuse = false;
-bool useSpecular = false;
+bool usePoint = false;
+bool useDirectional = false;
+bool useSpotlight = false;
 
 namespace RenderProcessing
 {
@@ -131,7 +132,10 @@ namespace RenderProcessing
         this->shader = shader;
         mvpLoc = glGetUniformLocation(shader, "MVP");
         modelLoc = glGetUniformLocation(shader, "model");
+        viewLoc = glGetUniformLocation(shader, "View");
+        modelViewLoc = glGetUniformLocation(shader, "modelView");
         textureLoc = glGetUniformLocation(shader, "textureSampler");
+
     }
 
     //move with keys
@@ -169,6 +173,24 @@ namespace RenderProcessing
         glUniform3fv(glGetUniformLocation(shader, "uMaterial.specular"), 1, glm::value_ptr(currentMaterial.Ks));
         glUniform1f(glGetUniformLocation(shader, "uMaterial.shininess"), currentMaterial.Ns);
 
+        // Fonte de luz ambiente global
+        glUniform3fv(glGetUniformLocation(shader, "uAmbientLight.ambient"), 1, glm::value_ptr(glm::vec3(0.1, 0.1, 0.1)));
+
+        // Fonte de luz direcional
+        glUniform3fv(glGetUniformLocation(shader, "uDirectionalLight.direction"), 1, glm::value_ptr(glm::vec3(1.0, 0.0, 0.0)));
+        glUniform3fv(glGetUniformLocation(shader, "uDirectionalLight.ambient"), 1, glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
+        glUniform3fv(glGetUniformLocation(shader, "uDirectionalLight.diffuse"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+        glUniform3fv(glGetUniformLocation(shader, "uDirectionalLight.specular"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+
+        // Fonte de luz pontual #1
+        glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].position"), 1, glm::value_ptr(glm::vec3(0.0, 0.0, 5.0)));
+        glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].ambient"), 1, glm::value_ptr(glm::vec3(0.1, 0.1, 0.1)));
+        glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].diffuse"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+        glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].specular"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+        glUniform1f(glGetUniformLocation(shader, "uPointLights[0].constant"), 1.0f);
+        glUniform1f(glGetUniformLocation(shader, "uPointLights[0].linear"), 0.06f);
+        glUniform1f(glGetUniformLocation(shader, "uPointLights[0].quadratic"), 0.02f);
+
         //sends camera position to shader to the viewPosition variable
         glUniform3fv(glGetUniformLocation(shader, "viewPosition"), 1, glm::value_ptr(cameraPos));
 
@@ -176,6 +198,7 @@ namespace RenderProcessing
         static bool lastKey1State = GLFW_RELEASE;
         static bool lastKey2State = GLFW_RELEASE;
         static bool lastKey3State = GLFW_RELEASE;
+        static bool lastKey4State = GLFW_RELEASE;
 
         if (window) {
             if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && lastKey1State == GLFW_RELEASE) {
@@ -188,8 +211,8 @@ namespace RenderProcessing
 
             
             if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && lastKey2State == GLFW_RELEASE) {
-                useDiffuse = !useDiffuse;
-                glUniform1i(glGetUniformLocation(shader, "useDiffuse"), useDiffuse);
+                usePoint = !usePoint;
+                glUniform1i(glGetUniformLocation(shader, "usePoint"), usePoint);
                 lastKey2State = GLFW_PRESS;  //key 2 pressed
             } else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
                 lastKey2State = GLFW_RELEASE; 
@@ -197,11 +220,19 @@ namespace RenderProcessing
 
             
             if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS && lastKey3State == GLFW_RELEASE) {
-                useSpecular = !useSpecular;
-                glUniform1i(glGetUniformLocation(shader, "useSpecular"), useSpecular);
+                useDirectional = !useDirectional;
+                glUniform1i(glGetUniformLocation(shader, "useDirectional"), useDirectional);
                 lastKey3State = GLFW_PRESS;  // key 3 pressed
             } else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
                 lastKey3State = GLFW_RELEASE; 
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS && lastKey4State == GLFW_RELEASE) {
+                useSpotlight = !useSpotlight;
+                glUniform1i(glGetUniformLocation(shader, "useSpotlight"), useSpotlight);
+                lastKey4State = GLFW_PRESS;  // key 4 pressed
+            } else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
+                lastKey4State = GLFW_RELEASE; 
             }
         }
 
@@ -225,9 +256,12 @@ namespace RenderProcessing
         glm::mat4 projection = glm::perspective(glm::radians(35.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
         //junction of all
         glm::mat4 mvp = projection * view * model;
+        glm::mat4 modelView = view * model;
         //sends model and mvp matrices to shader
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, glm::value_ptr(modelView));
 
         //used vertex array stored in VAO binds it to the object 
         glBindVertexArray(VAO);
