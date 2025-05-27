@@ -10,6 +10,10 @@
 #include "ObjLoader.h"
 #include "RenderProcessing.h"
 #include "Controls.h"
+<<<<<<< Updated upstream
+=======
+#include "Ball.h"
+>>>>>>> Stashed changes
 
 using namespace std;
 using namespace Controls;
@@ -22,8 +26,17 @@ RenderProcessing::RenderPro ballRender;
 
 int minimap = 200;
 
+<<<<<<< Updated upstream
 int main() {
     //init (these 5 lines are specifically needed for macos)
+=======
+// size of the minimap in pixels
+const int minimapSize = 400;
+
+int main()
+{
+    // init (these 5 lines are specifically needed for macos)
+>>>>>>> Stashed changes
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -47,7 +60,17 @@ int main() {
     //hides cursor
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+<<<<<<< Updated upstream
     //init GLEW
+=======
+    // adicionado chamar evento de clik de botão do rato
+    glfwSetMouseButtonCallback(window, Controls::mouse_button_callback);
+
+    // hides cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // init GLEW
+>>>>>>> Stashed changes
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         std::cout << "failed to initialize glew\n";
@@ -97,6 +120,7 @@ int main() {
         tableVerts.push_back(v);
     }
 
+    
     ShaderInfo table_shader[] = {
      { GL_VERTEX_SHADER,   "table.vert" },
      { GL_FRAGMENT_SHADER, "table.frag" },
@@ -123,23 +147,118 @@ int main() {
     ballRender.Install();
     ballRender.Set(ballShader);
 
+<<<<<<< Updated upstream
     //depth testing
     glEnable(GL_DEPTH_TEST);
+=======
+            RenderProcessing::RenderPro ballRenderPro;
+            
+            balls[j + (i * 4)].getRenderPro(ballRenderPro);
+
+            ballRenderPro.Set(ballShader);
+            ballRenderPro.Load("PoolBalls/Ball" + std::to_string(j + (i * 4) + 1) + ".obj");
+            ballRenderPro.Install();
+            ballRenderPro.SetScale(glm::vec3(0.05f));
+            
+            glm::vec3 ballPosition(-6.0f + i * 4, 1.0f, -6.0f + j * 4);
+            glm::vec3 ballOrientation(0.0f, 1.0f, 1.0f);
+            
+            balls[j + (i * 4)].setPosition(ballPosition);
+            balls[j + (i * 4)].setOrientation(ballOrientation);
+            
+            balls[j + (i * 4)].setRenderPro(ballRenderPro);
+        }
+    }
+
+    // main loop
+    while (!glfwWindowShouldClose(window))
+    {
+        Controls::handleInput(window);
+
+        tableRender.processInput(window);
+
+        /*// random animation for now
+        for (int j = 0; j < balls.size(); j++)
+        {
+            glm::vec3 position = balls[j].getPosition();
+            glm::vec3 offset(0.01f, 0.00f, 0.01f);
+            position += offset;
+            balls[j].setPosition(position);
+        }*/
+
+        // clear full screen
+        glDisable(GL_SCISSOR_TEST);
+
+        int fbW, fbH;
+        glfwGetFramebufferSize(window, &fbW, &fbH);
+        glViewport(0, 0, fbW, fbH);
+>>>>>>> Stashed changes
 
     //main loop
     while (!glfwWindowShouldClose(window)) {
         handleInput(window);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+<<<<<<< Updated upstream
         glm::vec3 tablePosition(0.0f, -5.0f, -2.0f);  
         glm::vec3 tableRotation(0.0f, 0.0f, 0.0f);   
         // tableRender.Render(tablePosition, tableRotation);
+=======
+        // render main scene
+        glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
+        glm::vec3 tableOrientation(0.0f, 0.0f, 0.0f);
+        tableRender.SetScale(glm::vec3(1.5f));
+        tableRender.Render(tablePosition, tableOrientation);
+        
+        for(auto &ball : balls)
+        {
+            RenderProcessing::RenderPro ballMainRender;
+            ball.getRenderPro(ballMainRender);
+            ballMainRender.modelRotation = tableRender.modelRotation;
+            ballMainRender.processInput(window);
+            ballMainRender.SetWindow(window);
+            ballMainRender.Render(ball.getPosition(), ball.getOrientation());
+        }
+>>>>>>> Stashed changes
 
         glm::vec3 ballPosition(0.0f, 3.0f, -2.0f);  
         glm::vec3 ballRotation(0.0f, 0.0f, 0.0f);  
         ballRender.SetScale(glm::vec3(0.05f));
         ballRender.Render(ballPosition, ballRotation);
 
+<<<<<<< Updated upstream
+=======
+        // clear white border around the minimap
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(
+            minix - border,
+            miniy - border,
+            minimapSize + 2 * border,
+            minimapSize + 2 * border);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // clear black inside minimap border
+        glScissor(minix, miniy, minimapSize, minimapSize);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDisable(GL_SCISSOR_TEST);
+
+        // change viewport to minimap size
+        glViewport(minix, miniy, minimapSize, minimapSize);
+
+        // render table & balls in minimap
+        tableRender.RenderInMinimap(tablePosition, tableOrientation);
+        tableRender.SetScale(glm::vec3(1.5f));
+        for(auto &ball : balls)
+        {
+            RenderProcessing::RenderPro ballMainRender;
+            ball.getRenderPro(ballMainRender);
+            ballMainRender.RenderInMinimap(ball.getPosition(), ball.getOrientation());
+        }
+
+        // swap buffers & poll events
+>>>>>>> Stashed changes
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

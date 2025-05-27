@@ -6685,7 +6685,7 @@ typedef void (GLAPIENTRY * PFNGLGETSHADERSOURCEARBPROC) (GLhandleARB obj, GLsize
 typedef GLint (GLAPIENTRY * PFNGLGETUNIFORMLOCATIONARBPROC) (GLhandleARB programObj, const GLcharARB* name);
 typedef void (GLAPIENTRY * PFNGLGETUNIFORMFVARBPROC) (GLhandleARB programObj, GLint location, GLfloat* params);
 typedef void (GLAPIENTRY * PFNGLGETUNIFORMIVARBPROC) (GLhandleARB programObj, GLint location, GLint* params);
-typedef void (GLAPIENTRY * PFNGLLINKPROGRAMARBPROC) (GLhandleARB programObj);
+typedef void (GLAPIENTRY * PFNGLLINKshaderRBPROC) (GLhandleARB programObj);
 typedef void (GLAPIENTRY * PFNGLSHADERSOURCEARBPROC) (GLhandleARB shaderObj, GLsizei count, const GLcharARB ** string, const GLint *length);
 typedef void (GLAPIENTRY * PFNGLUNIFORM1FARBPROC) (GLint location, GLfloat v0);
 typedef void (GLAPIENTRY * PFNGLUNIFORM1FVARBPROC) (GLint location, GLsizei count, const GLfloat* value);
@@ -6707,7 +6707,7 @@ typedef void (GLAPIENTRY * PFNGLUNIFORMMATRIX2FVARBPROC) (GLint location, GLsize
 typedef void (GLAPIENTRY * PFNGLUNIFORMMATRIX3FVARBPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
 typedef void (GLAPIENTRY * PFNGLUNIFORMMATRIX4FVARBPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
 typedef void (GLAPIENTRY * PFNGLUSEPROGRAMOBJECTARBPROC) (GLhandleARB programObj);
-typedef void (GLAPIENTRY * PFNGLVALIDATEPROGRAMARBPROC) (GLhandleARB programObj);
+typedef void (GLAPIENTRY * PFNGLVALIDATEshaderRBPROC) (GLhandleARB programObj);
 
 #define glAttachObjectARB GLEW_GET_FUN(__glewAttachObjectARB)
 #define glCompileShaderARB GLEW_GET_FUN(__glewCompileShaderARB)
@@ -6725,7 +6725,7 @@ typedef void (GLAPIENTRY * PFNGLVALIDATEPROGRAMARBPROC) (GLhandleARB programObj)
 #define glGetUniformLocationARB GLEW_GET_FUN(__glewGetUniformLocationARB)
 #define glGetUniformfvARB GLEW_GET_FUN(__glewGetUniformfvARB)
 #define glGetUniformivARB GLEW_GET_FUN(__glewGetUniformivARB)
-#define glLinkProgramARB GLEW_GET_FUN(__glewLinkProgramARB)
+#define glLinkshaderRB GLEW_GET_FUN(__glewLinkshaderRB)
 #define glShaderSourceARB GLEW_GET_FUN(__glewShaderSourceARB)
 #define glUniform1fARB GLEW_GET_FUN(__glewUniform1fARB)
 #define glUniform1fvARB GLEW_GET_FUN(__glewUniform1fvARB)
@@ -6747,7 +6747,7 @@ typedef void (GLAPIENTRY * PFNGLVALIDATEPROGRAMARBPROC) (GLhandleARB programObj)
 #define glUniformMatrix3fvARB GLEW_GET_FUN(__glewUniformMatrix3fvARB)
 #define glUniformMatrix4fvARB GLEW_GET_FUN(__glewUniformMatrix4fvARB)
 #define glUseProgramObjectARB GLEW_GET_FUN(__glewUseProgramObjectARB)
-#define glValidateProgramARB GLEW_GET_FUN(__glewValidateProgramARB)
+#define glValidateshaderRB GLEW_GET_FUN(__glewValidateshaderRB)
 
 #define GLEW_ARB_shader_objects GLEW_GET_VAR(__GLEW_ARB_shader_objects)
 
@@ -8177,7 +8177,7 @@ typedef GLboolean (GLAPIENTRY * PFNGLUNMAPBUFFERARBPROC) (GLenum target);
 #define GL_MATRIX30_ARB 0x88DE
 #define GL_MATRIX31_ARB 0x88DF
 
-typedef void (GLAPIENTRY * PFNGLBINDPROGRAMARBPROC) (GLenum target, GLuint program);
+typedef void (GLAPIENTRY * PFNGLBINDshaderRBPROC) (GLenum target, GLuint program);
 typedef void (GLAPIENTRY * PFNGLDELETEPROGRAMSARBPROC) (GLsizei n, const GLuint* programs);
 typedef void (GLAPIENTRY * PFNGLDISABLEVERTEXATTRIBARRAYARBPROC) (GLuint index);
 typedef void (GLAPIENTRY * PFNGLENABLEVERTEXATTRIBARRAYARBPROC) (GLuint index);
@@ -8192,7 +8192,7 @@ typedef void (GLAPIENTRY * PFNGLGETVERTEXATTRIBPOINTERVARBPROC) (GLuint index, G
 typedef void (GLAPIENTRY * PFNGLGETVERTEXATTRIBDVARBPROC) (GLuint index, GLenum pname, GLdouble* params);
 typedef void (GLAPIENTRY * PFNGLGETVERTEXATTRIBFVARBPROC) (GLuint index, GLenum pname, GLfloat* params);
 typedef void (GLAPIENTRY * PFNGLGETVERTEXATTRIBIVARBPROC) (GLuint index, GLenum pname, GLint* params);
-typedef GLboolean (GLAPIENTRY * PFNGLISPROGRAMARBPROC) (GLuint program);
+typedef GLboolean (GLAPIENTRY * PFNGLISshaderRBPROC) (GLuint program);
 typedef void (GLAPIENTRY * PFNGLPROGRAMENVPARAMETER4DARBPROC) (GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
 typedef void (GLAPIENTRY * PFNGLPROGRAMENVPARAMETER4DVARBPROC) (GLenum target, GLuint index, const GLdouble* params);
 typedef void (GLAPIENTRY * PFNGLPROGRAMENVPARAMETER4FARBPROC) (GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
@@ -8240,7 +8240,7 @@ typedef void (GLAPIENTRY * PFNGLVERTEXATTRIB4UIVARBPROC) (GLuint index, const GL
 typedef void (GLAPIENTRY * PFNGLVERTEXATTRIB4USVARBPROC) (GLuint index, const GLushort* v);
 typedef void (GLAPIENTRY * PFNGLVERTEXATTRIBPOINTERARBPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 
-#define glBindProgramARB GLEW_GET_FUN(__glewBindProgramARB)
+#define glBindshaderRB GLEW_GET_FUN(__glewBindshaderRB)
 #define glDeleteProgramsARB GLEW_GET_FUN(__glewDeleteProgramsARB)
 #define glDisableVertexAttribArrayARB GLEW_GET_FUN(__glewDisableVertexAttribArrayARB)
 #define glEnableVertexAttribArrayARB GLEW_GET_FUN(__glewEnableVertexAttribArrayARB)
@@ -8255,7 +8255,7 @@ typedef void (GLAPIENTRY * PFNGLVERTEXATTRIBPOINTERARBPROC) (GLuint index, GLint
 #define glGetVertexAttribdvARB GLEW_GET_FUN(__glewGetVertexAttribdvARB)
 #define glGetVertexAttribfvARB GLEW_GET_FUN(__glewGetVertexAttribfvARB)
 #define glGetVertexAttribivARB GLEW_GET_FUN(__glewGetVertexAttribivARB)
-#define glIsProgramARB GLEW_GET_FUN(__glewIsProgramARB)
+#define glIsshaderRB GLEW_GET_FUN(__glewIsshaderRB)
 #define glProgramEnvParameter4dARB GLEW_GET_FUN(__glewProgramEnvParameter4dARB)
 #define glProgramEnvParameter4dvARB GLEW_GET_FUN(__glewProgramEnvParameter4dvARB)
 #define glProgramEnvParameter4fARB GLEW_GET_FUN(__glewProgramEnvParameter4fARB)
@@ -23239,7 +23239,7 @@ GLEW_FUN_EXPORT PFNGLGETSHADERSOURCEARBPROC __glewGetShaderSourceARB;
 GLEW_FUN_EXPORT PFNGLGETUNIFORMLOCATIONARBPROC __glewGetUniformLocationARB;
 GLEW_FUN_EXPORT PFNGLGETUNIFORMFVARBPROC __glewGetUniformfvARB;
 GLEW_FUN_EXPORT PFNGLGETUNIFORMIVARBPROC __glewGetUniformivARB;
-GLEW_FUN_EXPORT PFNGLLINKPROGRAMARBPROC __glewLinkProgramARB;
+GLEW_FUN_EXPORT PFNGLLINKshaderRBPROC __glewLinkshaderRB;
 GLEW_FUN_EXPORT PFNGLSHADERSOURCEARBPROC __glewShaderSourceARB;
 GLEW_FUN_EXPORT PFNGLUNIFORM1FARBPROC __glewUniform1fARB;
 GLEW_FUN_EXPORT PFNGLUNIFORM1FVARBPROC __glewUniform1fvARB;
@@ -23261,7 +23261,7 @@ GLEW_FUN_EXPORT PFNGLUNIFORMMATRIX2FVARBPROC __glewUniformMatrix2fvARB;
 GLEW_FUN_EXPORT PFNGLUNIFORMMATRIX3FVARBPROC __glewUniformMatrix3fvARB;
 GLEW_FUN_EXPORT PFNGLUNIFORMMATRIX4FVARBPROC __glewUniformMatrix4fvARB;
 GLEW_FUN_EXPORT PFNGLUSEPROGRAMOBJECTARBPROC __glewUseProgramObjectARB;
-GLEW_FUN_EXPORT PFNGLVALIDATEPROGRAMARBPROC __glewValidateProgramARB;
+GLEW_FUN_EXPORT PFNGLVALIDATEshaderRBPROC __glewValidateshaderRB;
 
 GLEW_FUN_EXPORT PFNGLSHADERSTORAGEBLOCKBINDINGPROC __glewShaderStorageBlockBinding;
 
@@ -23415,7 +23415,7 @@ GLEW_FUN_EXPORT PFNGLISBUFFERARBPROC __glewIsBufferARB;
 GLEW_FUN_EXPORT PFNGLMAPBUFFERARBPROC __glewMapBufferARB;
 GLEW_FUN_EXPORT PFNGLUNMAPBUFFERARBPROC __glewUnmapBufferARB;
 
-GLEW_FUN_EXPORT PFNGLBINDPROGRAMARBPROC __glewBindProgramARB;
+GLEW_FUN_EXPORT PFNGLBINDshaderRBPROC __glewBindshaderRB;
 GLEW_FUN_EXPORT PFNGLDELETEPROGRAMSARBPROC __glewDeleteProgramsARB;
 GLEW_FUN_EXPORT PFNGLDISABLEVERTEXATTRIBARRAYARBPROC __glewDisableVertexAttribArrayARB;
 GLEW_FUN_EXPORT PFNGLENABLEVERTEXATTRIBARRAYARBPROC __glewEnableVertexAttribArrayARB;
@@ -23430,7 +23430,7 @@ GLEW_FUN_EXPORT PFNGLGETVERTEXATTRIBPOINTERVARBPROC __glewGetVertexAttribPointer
 GLEW_FUN_EXPORT PFNGLGETVERTEXATTRIBDVARBPROC __glewGetVertexAttribdvARB;
 GLEW_FUN_EXPORT PFNGLGETVERTEXATTRIBFVARBPROC __glewGetVertexAttribfvARB;
 GLEW_FUN_EXPORT PFNGLGETVERTEXATTRIBIVARBPROC __glewGetVertexAttribivARB;
-GLEW_FUN_EXPORT PFNGLISPROGRAMARBPROC __glewIsProgramARB;
+GLEW_FUN_EXPORT PFNGLISshaderRBPROC __glewIsshaderRB;
 GLEW_FUN_EXPORT PFNGLPROGRAMENVPARAMETER4DARBPROC __glewProgramEnvParameter4dARB;
 GLEW_FUN_EXPORT PFNGLPROGRAMENVPARAMETER4DVARBPROC __glewProgramEnvParameter4dvARB;
 GLEW_FUN_EXPORT PFNGLPROGRAMENVPARAMETER4FARBPROC __glewProgramEnvParameter4fARB;

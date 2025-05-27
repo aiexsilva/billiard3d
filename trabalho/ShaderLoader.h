@@ -27,7 +27,7 @@ ShaderInfo  shaders[] = {
 
 Retorno:
 --------
-Em caso de sucesso, a fun��o retorna o valore que referencia o objeto programa.
+Em caso de sucesso, a fun��o retorna o valore que referencia o objeto shader.
 Em caso de erro, ser� retornado o valor zero (0).
 
 *****************************************************************************/

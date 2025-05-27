@@ -21,6 +21,10 @@
        "${workspaceFolder}/ObjLoader.cpp",
        "${workspaceFolder}/Source.cpp",
        "${workspaceFolder}/Controls.cpp",
+<<<<<<< Updated upstream
+=======
+       "${workspaceFolder}/Ball.cpp",
+>>>>>>> Stashed changes
        "-o",
        "${workspaceFolder}/app",
        "-framework",

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+//https://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/ used this tutorial as guideline
 bool LoadObject(const std::string filepath, std::vector<glm::vec3> & out_vertices, std::vector<glm::vec2> & out_uvs, std::vector<glm::vec3> & out_normals, std::string& out_mtlFilename){
 
     std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
