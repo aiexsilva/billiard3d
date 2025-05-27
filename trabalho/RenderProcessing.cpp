@@ -191,12 +191,12 @@ namespace RenderProcessing
 
       // Fonte de luz direcional
       glUniform3fv(glGetUniformLocation(shader, "uDirLight.direction"), 1, glm::value_ptr(glm::vec3(1.0, 0.0, 0.0)));
-      glUniform3fv(glGetUniformLocation(shader, "uDirLight.ambient"), 1, glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
+      glUniform3fv(glGetUniformLocation(shader, "uDirLight.ambient"), 1, glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
       glUniform3fv(glGetUniformLocation(shader, "uDirLight.diffuse"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
       glUniform3fv(glGetUniformLocation(shader, "uDirLight.specular"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
 
       // Fonte de luz pontual #1
-      glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].position"), 1, glm::value_ptr(glm::vec3(0.0, 0.0, 5.0)));
+      glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].position"), 1, glm::value_ptr(glm::vec3(0.0, 10.0, 5.0)));
       glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].ambient"), 1, glm::value_ptr(glm::vec3(0.1, 0.1, 0.1)));
       glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].diffuse"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
       glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].specular"), 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
