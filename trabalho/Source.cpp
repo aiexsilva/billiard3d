@@ -124,19 +124,17 @@ int main()
    if (!ballShader)
       exit(EXIT_FAILURE);
 
-   
    tableRender.ManualLoad(tableVerts);
 
    vector<glm::vec3> tableColors;
    tableColors.reserve(tableVerts.size());
    glm::vec3 faceGreen[6] = {
-       {0.2f, 0.8f, 0.2f},    
-       {0.1f, 0.6f, 0.1f},    
-       {0.15f, 0.75f, 0.15f}, 
-       {0.25f, 0.85f, 0.25f}, 
-       {0.3f, 0.9f, 0.3f},    
-       {0.05f, 0.5f, 0.05f}   
-   };
+       {0.2f, 0.8f, 0.2f},
+       {0.1f, 0.6f, 0.1f},
+       {0.15f, 0.75f, 0.15f},
+       {0.25f, 0.85f, 0.25f},
+       {0.3f, 0.9f, 0.3f},
+       {0.05f, 0.5f, 0.05f}};
    for (int face = 0; face < 6; ++face)
    {
       for (int i = 0; i < 6; ++i)
@@ -164,7 +162,7 @@ int main()
 
    float r = balls[0].getRadius();
    float spacing = r * 3.0f * 1.1f;
-   float tableY = 1.5f;
+   float tableY = 1.0f;
 
    glm::vec3 rackCenter = glm::vec3(0.0f, tableY, 1.2f);
    int idx = 0;
@@ -177,7 +175,7 @@ int main()
       {
          float x = startX + j * spacing;
          balls[idx].setPosition({x, tableY, z});
-         balls[idx].setOrientation({0, 1, 0});
+         balls[idx].setOrientation({0.0f, 1.0f, 0.0f});
          ++idx;
       }
    }
@@ -205,7 +203,7 @@ int main()
       glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
       glm::vec3 tableOrientation(0.0f, 0.0f, 0.0f);
       tableRender.SetScale(glm::vec3(1.5f));
-      // tableRender.Render(tablePosition, tableOrientation);
+      tableRender.Render(tablePosition, tableOrientation);
 
       // glm::mat4 tableModel = glm::mat4(1.0f);
       // tableModel = glm::translate(tableModel, tablePosition);

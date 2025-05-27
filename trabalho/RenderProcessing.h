@@ -24,8 +24,8 @@ namespace RenderProcessing
       void SetWindow(GLFWwindow *window);
       GLuint LoadTexture(const std::string filepath);
 
-      glm::vec3 modelRotation = glm::vec3(30.0f, 30.0f, 0.0f);
-      glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6.0f);
+      glm::vec3 modelRotation = glm::vec3(0.0f);
+      glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
 
    private:
       std::vector<glm::vec3> vertices;

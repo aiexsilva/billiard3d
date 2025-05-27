@@ -1,5 +1,5 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     '/Users/dianasilva/Documents/GitHub/billiard3d/trabalho/app'
+binary-path:     '/Users/marcobarbosa/Development/C++/billiard3d/trabalho/app'
 relocations:     []
 ...
