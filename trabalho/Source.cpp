@@ -192,8 +192,6 @@ int main()
    {
       Controls::handleInput(window, balls);
 
-      tableRender.processInput(window);
-
       // clear full screen
       glDisable(GL_SCISSOR_TEST);
 
@@ -207,17 +205,17 @@ int main()
       glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
       glm::vec3 tableOrientation(0.0f, 0.0f, 0.0f);
       tableRender.SetScale(glm::vec3(1.5f));
-      tableRender.Render(tablePosition, tableOrientation);
+      // tableRender.Render(tablePosition, tableOrientation);
 
-      glm::mat4 tableModel = glm::mat4(1.0f);
-      tableModel = glm::translate(tableModel, tablePosition);
+      // glm::mat4 tableModel = glm::mat4(1.0f);
+      // tableModel = glm::translate(tableModel, tablePosition);
 
-      // Apply rotation from tableRender.modelRotation (assuming it's a glm::vec3 with degrees)
-      tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.x), glm::vec3(1, 0, 0));
-      tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.y), glm::vec3(0, 1, 0));
-      tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.z), glm::vec3(0, 0, 1));
+      // // Apply rotation from tableRender.modelRotation (assuming it's a glm::vec3 with degrees)
+      // tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.x), glm::vec3(1, 0, 0));
+      // tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.y), glm::vec3(0, 1, 0));
+      // tableModel = glm::rotate(tableModel, glm::radians(tableRender.modelRotation.z), glm::vec3(0, 0, 1));
 
-      tableModel = glm::scale(tableModel, glm::vec3(1.0f));
+      // tableModel = glm::scale(tableModel, glm::vec3(1.0f));
 
       double currentTime = glfwGetTime();
       float deltaTime = float(currentTime - lastTime);
@@ -231,26 +229,25 @@ int main()
          RenderProcessing::RenderPro ballMainRender;
          ball.getRenderPro(ballMainRender);
 
-         // Transform ball position by table model matrix
-         glm::vec4 localPos = glm::vec4(ball.getPosition(), 1.0f);
-         glm::vec4 transformedPos = tableModel * localPos;
-         glm::vec3 newBallPos = glm::vec3(transformedPos);
+         // // Transform ball position by table model matrix
+         // glm::vec4 localPos = glm::vec4(ball.getPosition(), 1.0f);
+         // glm::vec4 transformedPos = tableModel * localPos;
+         // glm::vec3 newBallPos = glm::vec3(transformedPos);
 
-         // Optionally rotate orientation as well
-         glm::mat4 rotationOnly = glm::mat4(1.0f);
-         rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.x), glm::vec3(1, 0, 0));
-         rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.y), glm::vec3(0, 1, 0));
-         rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.z), glm::vec3(0, 0, 1));
+         // // Optionally rotate orientation as well
+         // glm::mat4 rotationOnly = glm::mat4(1.0f);
+         // rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.x), glm::vec3(1, 0, 0));
+         // rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.y), glm::vec3(0, 1, 0));
+         // rotationOnly = glm::rotate(rotationOnly, glm::radians(tableRender.modelRotation.z), glm::vec3(0, 0, 1));
 
-         glm::vec4 ori = glm::vec4(ball.getOrientation(), 0.0f);
-         glm::vec3 newOrientation = glm::vec3(rotationOnly * ori);
+         // glm::vec4 ori = glm::vec4(ball.getOrientation(), 0.0f);
+         // glm::vec3 newOrientation = glm::vec3(rotationOnly * ori);
 
          ballMainRender.modelRotation = tableRender.modelRotation;
-         ballMainRender.processInput(window);
          ballMainRender.SetWindow(window);
 
          // Render ball at transformed position and orientation
-         ballMainRender.Render(newBallPos, newOrientation);
+         ballMainRender.Render(ball.getPosition(), ball.getOrientation());
       }
 
       for (size_t i = 0; i < balls.size(); ++i)

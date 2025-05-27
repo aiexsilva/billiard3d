@@ -114,7 +114,23 @@ namespace RenderProcessing
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
       glEnableVertexAttribArray(0);
 
-
+      
+      // -- uv buffer object --
+      GLuint VBO_UV;
+      glGenBuffers(1, &VBO_UV);
+      glBindBuffer(GL_ARRAY_BUFFER, VBO_UV);
+      glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
+      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+      glEnableVertexAttribArray(1);
+      
+      // -- normal buffer object --
+      GLuint normalBuffer;
+      glGenBuffers(1, &normalBuffer);
+      glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+      glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+      glEnableVertexAttribArray(2);
+      
       // -- color buffer object --
       glGenBuffers(1, &colorVBO);
       glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
@@ -126,25 +142,9 @@ namespace RenderProcessing
       glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
       glEnableVertexAttribArray(3);
 
-      // -- uv buffer object --
-      GLuint VBO_UV;
-      glGenBuffers(1, &VBO_UV);
-      glBindBuffer(GL_ARRAY_BUFFER, VBO_UV);
-      glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
-      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-      glEnableVertexAttribArray(1);
-
-      // -- normal buffer object --
-      GLuint normalBuffer;
-      glGenBuffers(1, &normalBuffer);
-      glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-      glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
-      glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-      glEnableVertexAttribArray(2);
-
       glBindVertexArray(0);
    }
-
+   
    void RenderPro::Set(GLuint shader)
    {
       this->shader = shader;
@@ -153,30 +153,6 @@ namespace RenderProcessing
       viewLoc = glGetUniformLocation(shader, "View");
       modelViewLoc = glGetUniformLocation(shader, "modelView");
       textureLoc = glGetUniformLocation(shader, "textureSampler");
-   }
-
-   // move with keys
-   void RenderPro::processInput(GLFWwindow *window)
-   {
-      if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      {
-          modelRotation.y += 1.0f; // rotate around Y axis
-      }
-
-      if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      {
-          modelRotation.y -= 1.0f; // rotate around Y axis
-      }
-
-      if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      {
-          modelRotation.x += 1.0f; // rotate around X axi§s
-      }
-
-      if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      {
-          modelRotation.x -= 1.0f; // rotate around X axis
-      }
    }
 
    void RenderPro::Render(glm::vec3 position, glm::vec3 orientation)
@@ -297,33 +273,42 @@ namespace RenderProcessing
       // activate and bind texture to object
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture);
-      glUniform1i(textureLoc, 0);
+      glUniform1i(textureLoc, 0); 
 
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::scale(model, scale);
+      //adicionado escala global
+      glm::mat4 model = Controls::globalRotationMatrix;
+      model = glm::scale(model, Controls::globalScale * scale);
+
       model = glm::translate(model, position);
+      model = Controls::globalRotationMatrix * model; 
       model = glm::translate(model, orientation);
-      // these are used to rotate the objects however is subject to change
+
+      //these are used to rotate the objects however is subject to change
       model = glm::rotate(model, glm::radians(modelRotation.x), glm::vec3(1, 0, 0));
       model = glm::rotate(model, glm::radians(modelRotation.y), glm::vec3(0, 1, 0));
       model = glm::rotate(model, glm::radians(modelRotation.z), glm::vec3(0, 0, 1));
 
-      // view matrix
+      //view matrix 
       glm::mat4 view = glm::lookAt(cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      // projection matrix
+      //projection matrix
       glm::mat4 projection = glm::perspective(glm::radians(35.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
-      // junction of all
+      //junction of all
       glm::mat4 mvp = projection * view * model;
       glm::mat4 modelView = view * model;
-      // sends model and mvp matrices to shader
+      //sends model and mvp matrices to shader
       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
       glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
       glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
       glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, glm::value_ptr(modelView));
 
-      // used vertex array stored in VAO binds it to the object
+
+      glUniform3fv(glGetUniformLocation(shader, "uPointLights[0].position"), 1,
+      glm::value_ptr(glm::vec3(0.0, 0.0, 5.0) * Controls::globalScale));
+
+      //used vertex array stored in VAO binds it to the object 
       glBindVertexArray(VAO);
-      // renders
+      //renders
       glDrawArrays(GL_TRIANGLES, 0, vertices.size());
    }
 

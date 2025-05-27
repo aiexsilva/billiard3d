@@ -12,12 +12,14 @@
 namespace Controls
 {
 
+   glm::mat4 globalRotationMatrix = glm::mat4(1.0f); 
+   float globalScale = 1.0f;                         
+   bool leftMousePressed = false;
+
    // Camera spherical coordinates for orbital view
    float radius = 3.0f; // distance from table center
    float yaw = 0.0f;    // horizontal angle
    float pitch = 20.0f; // vertical angle
-   const float sensitivity = 0.1f;
-   const float zoomSpeed = 1.0f;
    bool firstMouse = true;
    float lastX = width * 0.5f;
    float lastY = height * 0.5f;
@@ -36,6 +38,18 @@ namespace Controls
       }
    }
 
+   void updateGlobalRotation(float deltaX, float deltaY)
+   {
+      float sensitivity = 0.005f;
+      float angleX = deltaX * sensitivity;
+      float angleY = deltaY * sensitivity;
+
+      glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), angleX, glm::vec3(0.0f, 1.0f, 0.0f));
+      glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), angleY, glm::vec3(1.0f, 0.0f, 0.0f));
+
+      globalRotationMatrix = rotX * rotY * globalRotationMatrix;
+   }
+
    // Update yaw/pitch from mouse movement (orbit control)
    void cursor_callback(GLFWwindow *window, double xpos, double ypos)
    {
@@ -44,24 +58,42 @@ namespace Controls
          lastX = float(xpos);
          lastY = float(ypos);
          firstMouse = false;
+         return;
       }
-      float xoffset = float(xpos) - lastX;
-      float yoffset = lastY - float(ypos);
+
+      // adicionado ao precionar o botão esquerdo do rato calcula e atualiza a matriz global
+      if (leftMousePressed)
+      {
+         float dx = float(xpos - lastX);
+         float dy = float(ypos - lastY);
+
+         updateGlobalRotation(dx, dy);
+      }
+
       lastX = float(xpos);
       lastY = float(ypos);
-
-      xoffset *= sensitivity;
-      yoffset *= sensitivity;
-
-      yaw += xoffset;
-      pitch += yoffset;
-      pitch = glm::clamp(pitch, -89.0f, 89.0f);
    }
 
    // Zoom in/out by adjusting radius (scroll wheel)
    void scroll_callback(GLFWwindow *window, double /*xoffset*/, double yoffset)
    {
-      radius -= float(yoffset) * zoomSpeed;
-      radius = glm::clamp(radius, 2.0f, 20.0f);
+      float zoomSpeed = 0.1f;
+      globalScale += yoffset * zoomSpeed; 
+
+      if (globalScale < 0.1f)
+         globalScale = 0.1f;
+      if (globalScale > 10.0f)
+         globalScale = 10.0f;
+   }
+
+   void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
+   {
+      if (button == GLFW_MOUSE_BUTTON_LEFT)
+      {
+         if (action == GLFW_PRESS)
+            leftMousePressed = true;
+         else if (action == GLFW_RELEASE)
+            leftMousePressed = false;
+      }
    }
 }
