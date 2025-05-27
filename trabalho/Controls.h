@@ -17,12 +17,10 @@ namespace Controls
    extern float lastX;
    extern float lastY;
 
-   // adicionado variaveis glovais para rotação e escala
    extern glm::mat4 globalRotationMatrix;
    extern float globalScale;
    extern bool leftMousePressed;
 
-   // adicionado função para atualizar a rotação
    void updateGlobalRotation(float deltaX, float deltaY);
 
    void handleInput(GLFWwindow *window, vector<Ball::Ball> &balls);

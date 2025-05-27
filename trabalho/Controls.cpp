@@ -12,8 +12,8 @@
 namespace Controls
 {
 
-   glm::mat4 globalRotationMatrix = glm::mat4(1.0f); 
-   float globalScale = 1.0f;                         
+   glm::mat4 globalRotationMatrix = glm::mat4(1.0f);
+   float globalScale = 1.0f;
    bool leftMousePressed = false;
 
    // Camera spherical coordinates for orbital view
@@ -61,7 +61,6 @@ namespace Controls
          return;
       }
 
-      // adicionado ao precionar o botão esquerdo do rato calcula e atualiza a matriz global
       if (leftMousePressed)
       {
          float dx = float(xpos - lastX);
@@ -78,7 +77,7 @@ namespace Controls
    void scroll_callback(GLFWwindow *window, double /*xoffset*/, double yoffset)
    {
       float zoomSpeed = 0.1f;
-      globalScale += yoffset * zoomSpeed; 
+      globalScale += yoffset * zoomSpeed;
 
       if (globalScale < 0.1f)
          globalScale = 0.1f;

@@ -117,8 +117,7 @@ void main() {
         if(useAmbientMinimap){
             color += CalcDirectional(uDirLight, N, V, Kd, Ks, uMaterial.shininess);
             color *= vec3(0.48f, 0.8f, 0.4f);
-            // color *= vec3(0.48f, 0.8f - (index * 0.1) , 0.4f);
-            FragColor = vec4(color, 1.0); 
+            FragColor = vec4(color, 1.0);
         } else {
             FragColor = vec4(0.0);
         }
