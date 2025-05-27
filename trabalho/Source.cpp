@@ -14,15 +14,10 @@
 
 using namespace std;
 
-// 1 is true, 0 is false, change these to enable/disable camera controls
-#define ROTATE_CAMERA 1
-#define ZOOM_CAMERA 1
-
 #define height 800
 #define width 1200
 
 RenderProcessing::RenderPro tableRender;
-
 vector<Ball::Ball> balls(16);
 
 // size of the minimap in pixels
@@ -53,11 +48,9 @@ int main()
    }
    glfwMakeContextCurrent(window);
 
-   // using functions from controls.cpp to control cursor and scroll
-   if (ROTATE_CAMERA)
-      glfwSetCursorPosCallback(window, Controls::cursor_callback);
-   if (ZOOM_CAMERA)
-      glfwSetScrollCallback(window, Controls::scroll_callback);
+   glfwSetCursorPosCallback(window, Controls::cursor_callback);
+   glfwSetScrollCallback(window, Controls::scroll_callback);
+   glfwSetMouseButtonCallback(window, Controls::mouse_button_callback);
 
    // hides cursor
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -131,7 +124,29 @@ int main()
    if (!ballShader)
       exit(EXIT_FAILURE);
 
+   
    tableRender.ManualLoad(tableVerts);
+
+   vector<glm::vec3> tableColors;
+   tableColors.reserve(tableVerts.size());
+   glm::vec3 faceGreen[6] = {
+       {0.2f, 0.8f, 0.2f},    
+       {0.1f, 0.6f, 0.1f},    
+       {0.15f, 0.75f, 0.15f}, 
+       {0.25f, 0.85f, 0.25f}, 
+       {0.3f, 0.9f, 0.3f},    
+       {0.05f, 0.5f, 0.05f}   
+   };
+   for (int face = 0; face < 6; ++face)
+   {
+      for (int i = 0; i < 6; ++i)
+      {
+         tableColors.push_back(faceGreen[face]);
+      }
+   }
+
+   tableRender.SetTableColors(tableColors);
+
    tableRender.Install();
    tableRender.Set(tableShader);
 

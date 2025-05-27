@@ -43,15 +43,17 @@ uniform DirectionalLight uDirLight;
 uniform PointLight       uPointLights[NUM_POINT_LIGHTS];
 uniform SpotLight        uSpotLight;
 
-uniform Material      uMaterial;
-uniform sampler2D     textureSampler;
-uniform vec3          viewPosition;
+uniform Material uMaterial;
+uniform sampler2D textureSampler;
+uniform vec3 viewPosition;
+uniform vec3 lightColor;
 
 uniform bool uUseLighting;
 uniform bool useAmbient;
 uniform bool useDirectional;
 uniform bool usePoint;
 uniform bool useSpotlight;
+uniform bool useAmbientMinimap;
 
 vec3 CalcAmbient(AmbientLight L, vec3 Ka) {
     return L.ambient * Ka;
@@ -99,29 +101,43 @@ vec3 CalcSpot(SpotLight L, vec3 P, vec3 N, vec3 V, vec3 Kd, vec3 Ks, float shini
 }
 
 void main() {
+
+    vec3 N  = normalize(Normal);
+    vec3 V  = normalize(viewPosition - FragPosition);
+    vec3 Kd = uMaterial.diffuse;
+    vec3 Ks = uMaterial.specular;
+    vec3 Ka = uMaterial.ambient;
+    vec3 tex = texture(textureSampler, TexCoord).rgb;
+    vec3 color = uMaterial.ambient * lightColor;
+
     if (!uUseLighting) {
-        FragColor = vec4(0.0);
+        if(useAmbientMinimap){
+            color += CalcDirectional(uDirLight, N, V, Kd, Ks, uMaterial.shininess);
+            color *= tex;
+            FragColor = vec4(color, 1.0);
+        } else {
+            FragColor = vec4(0.0);
+        }
         return;
     }
 
-    vec3 N   = normalize(Normal);
-    vec3 V   = normalize(viewPosition - FragPosition);
-    vec3 Kd  = uMaterial.diffuse;
-    vec3 Ks  = uMaterial.specular;
-    vec3 tex = texture(textureSampler, TexCoord).rgb;
+    if (!(useAmbient || useDirectional || usePoint || useSpotlight)) {
+        color = vec3(0.0);
+    }
 
-    vec3 color = uMaterial.ambient * 0.0;
-
-    if (useAmbient)
-        color += CalcAmbient(uAmbientLight, uMaterial.ambient);
-    if (useDirectional)
+    if (useAmbient){
+        color += CalcAmbient(uAmbientLight, Ka);
+    }
+    if (useDirectional){
         color += CalcDirectional(uDirLight, N, V, Kd, Ks, uMaterial.shininess);
+    }
     if (usePoint) {
         for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
             color += CalcPoint(uPointLights[i], FragPosition, N, V, Kd, Ks, uMaterial.shininess);
     }
-    if (useSpotlight)
+    if (useSpotlight){
         color += CalcSpot(uSpotLight, FragPosition, N, V, Kd, Ks, uMaterial.shininess);
+    }
 
     color *= tex;
     FragColor = vec4(color, 1.0);

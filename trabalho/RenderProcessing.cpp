@@ -24,6 +24,12 @@ bool useSpotlight = false;
 namespace RenderProcessing
 {
 
+   void RenderPro::SetTableColors(
+       vector<glm::vec3> tableColors)
+   {
+      this->tableColors = tableColors;
+   }
+
    void RenderPro::ManualLoad(const std::vector<glm::vec3> &Vertices)
    {
       vertices = Vertices;
@@ -108,6 +114,18 @@ namespace RenderProcessing
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
       glEnableVertexAttribArray(0);
 
+
+      // -- color buffer object --
+      glGenBuffers(1, &colorVBO);
+      glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
+      glBufferData(
+          GL_ARRAY_BUFFER,
+          tableColors.size() * sizeof(glm::vec3),
+          tableColors.data(),
+          GL_STATIC_DRAW);
+      glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+      glEnableVertexAttribArray(3);
+
       // -- uv buffer object --
       GLuint VBO_UV;
       glGenBuffers(1, &VBO_UV);
@@ -140,25 +158,25 @@ namespace RenderProcessing
    // move with keys
    void RenderPro::processInput(GLFWwindow *window)
    {
-      // if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      // {
-      //    modelRotation.y += 1.0f; // rotate around Y axis
-      // }
+      if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+      {
+          modelRotation.y += 1.0f; // rotate around Y axis
+      }
 
-      // if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      // {
-      //    modelRotation.y -= 1.0f; // rotate around Y axis
-      // }
+      if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+      {
+          modelRotation.y -= 1.0f; // rotate around Y axis
+      }
 
-      // if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      // {
-      //    modelRotation.x += 1.0f; // rotate around X axi§s
-      // }
+      if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+      {
+          modelRotation.x += 1.0f; // rotate around X axi§s
+      }
 
-      // if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      // {
-      //    modelRotation.x -= 1.0f; // rotate around X axis
-      // }
+      if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+      {
+          modelRotation.x -= 1.0f; // rotate around X axis
+      }
    }
 
    void RenderPro::Render(glm::vec3 position, glm::vec3 orientation)
@@ -181,13 +199,13 @@ namespace RenderProcessing
       // https://learnopengl.com/Lighting/Basic-Lighting light related stuff
       glUniform3fv(glGetUniformLocation(shader, "lightColor"), 1, glm::value_ptr(lightColor));
       // send to shader the currentmaterial.whatever to it's corresponding variable so it can be used in calculations
-      glUniform3fv(glGetUniformLocation(shader, "uMaterial.ambient"), 1, glm::value_ptr(currentMaterial.Kd)); // it should be Ka but for some reason it doesnt work with Ka
+      glUniform3fv(glGetUniformLocation(shader, "uMaterial.ambient"), 1, glm::value_ptr(currentMaterial.Ka));
       glUniform3fv(glGetUniformLocation(shader, "uMaterial.diffuse"), 1, glm::value_ptr(currentMaterial.Kd));
       glUniform3fv(glGetUniformLocation(shader, "uMaterial.specular"), 1, glm::value_ptr(currentMaterial.Ks));
       glUniform1f(glGetUniformLocation(shader, "uMaterial.shininess"), currentMaterial.Ns);
 
       // Fonte de luz ambiente global
-      glUniform3fv(glGetUniformLocation(shader, "uAmbientLight.ambient"), 1, glm::value_ptr(glm::vec3(0.5f)));
+      glUniform3fv(glGetUniformLocation(shader, "uAmbientLight.ambient"), 1, glm::value_ptr(glm::vec3(2.0f)));
 
       // Fonte de luz direcional
       glUniform3fv(glGetUniformLocation(shader, "uDirLight.direction"), 1, glm::value_ptr(glm::vec3(1.0, 0.0, 0.0)));
@@ -313,6 +331,7 @@ namespace RenderProcessing
    {
       glUseProgram(shader);
       glUniform1i(glGetUniformLocation(shader, "uUseLighting"), 0);
+      glUniform1i(glGetUniformLocation(shader, "useAmbientMinimap"), 1);
 
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture);
