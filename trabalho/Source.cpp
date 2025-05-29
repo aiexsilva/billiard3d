@@ -48,6 +48,7 @@ int main()
    }
    glfwMakeContextCurrent(window);
 
+   // get cursor position and scroll callbacks to handle world movement
    glfwSetCursorPosCallback(window, Controls::cursor_callback);
    glfwSetScrollCallback(window, Controls::scroll_callback);
    glfwSetMouseButtonCallback(window, Controls::mouse_button_callback);
@@ -113,7 +114,7 @@ int main()
        {GL_FRAGMENT_SHADER, "table.frag"},
        {GL_NONE, NULL}};
    ShaderInfo ball_shader[] = {
-       {GL_VERTEX_SHADER, "ball.vert"},
+       {GL_VERTEX_SHADER, "ball.vert"}, 
        {GL_FRAGMENT_SHADER, "ball.frag"},
        {GL_NONE, NULL}};
 

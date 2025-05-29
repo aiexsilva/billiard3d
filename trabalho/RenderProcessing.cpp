@@ -23,22 +23,25 @@ bool useSpotlight = false;
 
 namespace RenderProcessing
 {
-
+   // passa vetores de cores do source para o render
    void RenderPro::SetTableColors(
        vector<glm::vec3> tableColors)
    {
       this->tableColors = tableColors;
    }
 
+   // passa os vertices do source para o render
    void RenderPro::ManualLoad(const std::vector<glm::vec3> &Vertices)
    {
       vertices = Vertices;
    }
 
+   // carrega texturas
    GLuint RenderPro::LoadTexture(const std::string filepath)
    {
       int width, height, nrChannels;
 
+      // inverter a imagem verticalmente
       stbi_set_flip_vertically_on_load(true);
 
       unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
@@ -52,6 +55,7 @@ namespace RenderProcessing
       glGenTextures(1, &textureID);
       glBindTexture(GL_TEXTURE_2D, textureID);
 
+      // maneiras de como a textura é aplicada
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -61,11 +65,13 @@ namespace RenderProcessing
       glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
 
+      // clear image data from memory
       stbi_image_free(data);
 
       return textureID;
    }
 
+   // carrega o objeto e as variaveis dentro do mtl
    bool RenderPro::Load(const std::string filepath)
    {
       std::string mtlfilename;
@@ -101,6 +107,7 @@ namespace RenderProcessing
       return true;
    }
 
+   // cria os VAOs e VBOs necessários para renderizar o objeto
    void RenderPro::Install()
    {
       // -- position buffer --
@@ -145,6 +152,7 @@ namespace RenderProcessing
       glBindVertexArray(0);
    }
    
+   // define o shader que será usado para renderizar o objeto
    void RenderPro::Set(GLuint shader)
    {
       this->shader = shader;
@@ -155,10 +163,12 @@ namespace RenderProcessing
       textureLoc = glGetUniformLocation(shader, "textureSampler");
    }
 
+
    void RenderPro::Render(glm::vec3 position, glm::vec3 orientation)
    {
       glUseProgram(shader);
 
+      // sends info to frag that variable uUseLighting is True
       GLint loc = glGetUniformLocation(shader, "useAmbient");
       glUniform1i(loc, useAmbient);
       loc = glGetUniformLocation(shader, "useDirectional");

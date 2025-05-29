@@ -20,7 +20,6 @@ namespace RenderProcessing
       void RenderInMinimap(glm::vec3 position, glm::vec3 rotation);
       void SetScale(glm::vec3 newScale);
       void SetTableColors(vector<glm::vec3> tableColors);
-      void processInput(GLFWwindow *window);
       void SetWindow(GLFWwindow *window);
       GLuint LoadTexture(const std::string filepath);
 
