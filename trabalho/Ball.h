@@ -21,7 +21,6 @@ namespace Ball
       void setRenderPro(RenderProcessing::RenderPro renderPro);
       void getRenderPro(RenderProcessing::RenderPro &renderPro);
 
-      // physics related functions
       void setVelocity(glm::vec3 velocity);
       glm::vec3 getVelocity();
 
@@ -47,7 +46,6 @@ namespace Ball
       glm::vec3 orientation;
       RenderProcessing::RenderPro renderPro;
 
-      // physics related variables
       glm::vec3 accumulatedForces = glm::vec3(0.0f);
       glm::vec3 velocity = glm::vec3(0.0f);
       float radius = 1.0f;

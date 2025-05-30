@@ -20,7 +20,6 @@ using namespace std;
 RenderProcessing::RenderPro tableRender;
 vector<Ball::Ball> balls(16);
 
-// size of the minimap in pixels
 const int minimapSize = 400;
 
 glm::vec3 tableRUcorner(0.5f, 0.15f, 1.0f);
@@ -30,15 +29,13 @@ glm::vec3 tableLDcorner(-0.5f, -0.15f, 1.0f);
 
 int main()
 {
-   // init (these 5 lines are specifically needed for macos)
    glfwInit();
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-   glfwWindowHint(GLFW_DEPTH_BITS, 24); // you need this to enable the depth test
+   glfwWindowHint(GLFW_DEPTH_BITS, 24); 
 
-   // create window
    GLFWwindow *window = glfwCreateWindow(width, height, "Billiards", NULL, NULL);
    if (!window)
    {
@@ -48,15 +45,12 @@ int main()
    }
    glfwMakeContextCurrent(window);
 
-   // get cursor position and scroll callbacks to handle world movement
    glfwSetCursorPosCallback(window, Controls::cursor_callback);
    glfwSetScrollCallback(window, Controls::scroll_callback);
    glfwSetMouseButtonCallback(window, Controls::mouse_button_callback);
 
-   // hides cursor
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-   // init GLEW
    glewExperimental = GL_TRUE;
    if (glewInit() != GLEW_OK)
    {
@@ -64,38 +58,27 @@ int main()
       return -1;
    }
 
-   // depth testing
    glEnable(GL_DEPTH_TEST);
-   // set a default clear color (background)
    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-   // 3d parallelepiped vertices, assuming width = 1, length = 2, height = 0.3
    GLfloat paraleli_vertices[] = {
-       // front
-       -0.5f, -0.15f, 1.0f, // front bottom left
-       0.5f, -0.15f, 1.0f,  // front bottom right
-       0.5f, 0.15f, 1.0f,   // front top right
-       -0.5f, 0.15f, 1.0f,  // front top left
+       -0.5f, -0.15f, 1.0f,
+       0.5f, -0.15f, 1.0f,  
+       0.5f, 0.15f, 1.0f,   
+       -0.5f, 0.15f, 1.0f,  
 
-       // back
-       -0.5f, -0.15f, -1.0f, // back bottom left
-       0.5f, -0.15f, -1.0f,  // back bottom right
-       0.5f, 0.15f, -1.0f,   // back top right
-       -0.5f, 0.15f, -1.0f   // back top left
+       -0.5f, -0.15f, -1.0f, 
+       0.5f, -0.15f, -1.0f,  
+       0.5f, 0.15f, -1.0f,  
+       -0.5f, 0.15f, -1.0f  
    };
 
    GLuint paraleli_indices[] = {
-       // front face
        0, 1, 2, 0, 2, 3,
-       // back face
        4, 5, 6, 4, 6, 7,
-       // left face
        0, 3, 7, 0, 7, 4,
-       // right face
        1, 2, 6, 1, 6, 5,
-       // top face
        2, 3, 7, 2, 7, 6,
-       // bottom face
        0, 1, 5, 0, 5, 4};
 
    vector<glm::vec3> tableVerts;
@@ -186,12 +169,10 @@ int main()
 
    double lastTime = glfwGetTime();
 
-   // main loop
    while (!glfwWindowShouldClose(window))
    {
       Controls::handleInput(window, balls);
 
-      // clear full screen
       glDisable(GL_SCISSOR_TEST);
 
       int fbW, fbH;
@@ -200,7 +181,6 @@ int main()
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // render main scene
       glm::vec3 tablePosition(0.0f, -0.12f, 0.0f);
       glm::vec3 tableOrientation(0.0f, 0.0f, 0.0f);
       tableRender.SetScale(glm::vec3(1.5f));
@@ -220,7 +200,6 @@ int main()
          ballMainRender.modelRotation = tableRender.modelRotation;
          ballMainRender.SetWindow(window);
 
-         // Render ball at transformed position and orientation
          ballMainRender.Render(ball.getPosition(), ball.getOrientation());
       }
 
@@ -232,12 +211,10 @@ int main()
          }
       }
 
-      // define minimap position
       int minix = fbW - minimapSize - 10;
       int miniy = fbH - minimapSize - 10;
       const int border = 1;
 
-      // clear white border around the minimap
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glEnable(GL_SCISSOR_TEST);
       glScissor(
@@ -247,16 +224,13 @@ int main()
           minimapSize + 2 * border);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      // clear black inside minimap border
       glScissor(minix, miniy, minimapSize, minimapSize);
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDisable(GL_SCISSOR_TEST);
 
-      // change viewport to minimap size
       glViewport(minix, miniy, minimapSize, minimapSize);
 
-      // render table & balls in minimap
       tableRender.RenderInMinimap(tablePosition, tableOrientation);
       tableRender.SetScale(glm::vec3(1.5f));
       for (auto &ball : balls)
@@ -266,7 +240,6 @@ int main()
          ballMainRender.RenderInMinimap(ball.getPosition(), ball.getOrientation());
       }
 
-      // swap buffers & poll events
       glfwSwapBuffers(window);
       glfwPollEvents();
    }

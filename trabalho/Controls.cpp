@@ -16,15 +16,13 @@ namespace Controls
    float globalScale = 1.0f;
    bool leftMousePressed = false;
 
-   // Camera spherical coordinates for orbital view
-   float radius = 3.0f; // distance from table center
-   float yaw = 0.0f;    // horizontal angle
-   float pitch = 20.0f; // vertical angle
+   float radius = 3.0f; 
+   float yaw = 0.0f;    
+   float pitch = 20.0f; 
    bool firstMouse = true;
    float lastX = width * 0.5f;
    float lastY = height * 0.5f;
 
-   // Close window on ESC key press
    void handleInput(GLFWwindow *window, vector<Ball::Ball> &balls)
    {
       if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -50,7 +48,6 @@ namespace Controls
       globalRotationMatrix = rotX * rotY * globalRotationMatrix;
    }
 
-   // Update yaw/pitch from mouse movement (orbit control)
    void cursor_callback(GLFWwindow *window, double xpos, double ypos)
    {
       if (firstMouse)
@@ -73,8 +70,7 @@ namespace Controls
       lastY = float(ypos);
    }
 
-   // Zoom in/out by adjusting radius (scroll wheel)
-   void scroll_callback(GLFWwindow *window, double /*xoffset*/, double yoffset)
+   void scroll_callback(GLFWwindow *window, double , double yoffset)
    {
       float zoomSpeed = 0.1f;
       globalScale += yoffset * zoomSpeed;

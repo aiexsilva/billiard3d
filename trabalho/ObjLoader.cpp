@@ -6,7 +6,6 @@
 
 using namespace std;
 
-//https://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/ used this tutorial as guideline
 bool LoadObject(const std::string filepath, std::vector<glm::vec3> & out_vertices, std::vector<glm::vec2> & out_uvs, std::vector<glm::vec3> & out_normals, std::string& out_mtlFilename){
 
     std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
@@ -26,23 +25,19 @@ bool LoadObject(const std::string filepath, std::vector<glm::vec3> & out_vertice
         if (res == EOF){
             break;
         }else{
-            //gets the name of the mtl file off obj file
             if(strcmp(lineHeader, "mtllib") == 0){
                 char MTLFilename[128];
                 fscanf(filename, "%s", MTLFilename);
                 out_mtlFilename = MTLFilename;
             }
-            //read vertices
             if (strcmp(lineHeader, "v") == 0 ){
                 glm::vec3 vertex;
                 fscanf(filename, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
                 temp_vertices.push_back(vertex);
-            //read uvs
             }else if (strcmp(lineHeader, "vt") == 0 ){
                 glm::vec2 uv;
                 fscanf(filename, "%f %f\n", &uv.x, &uv.y );
                 temp_uvs.push_back(uv);
-            //read normals
             }else if (strcmp(lineHeader, "vn") == 0 ){
                 glm::vec3 normal;
                 fscanf(filename, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
@@ -88,11 +83,10 @@ bool LoadMTL(const std::string& filepath, std::vector<Material>& materials) {
         } else {
             if (strcmp(lineHeader, "newmtl") == 0)
             {
-                // saves material if it is not empty
                 if (!currentMaterial.name.empty())
                 {
                     materials.push_back(currentMaterial);
-                    currentMaterial = Material(); // resets current material
+                    currentMaterial = Material(); 
                 }
                 char nameBuf[128];
                 fscanf(filename, "%127s", nameBuf);
